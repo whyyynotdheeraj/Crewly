@@ -50,7 +50,10 @@ export default function AdminEventsPage() {
   const fetchEvents = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/events');
+      const res = await fetch(`/api/events?t=${Date.now()}`, {
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache, no-store, must-revalidate' }
+      });
       if (res.ok) {
         const data = await res.json();
         setEvents(data);

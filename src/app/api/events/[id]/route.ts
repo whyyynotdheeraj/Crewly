@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getUpcomingEventById, updateUpcomingEvent, deleteUpcomingEvent } from '@/db';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET(
   req: NextRequest,
@@ -11,7 +15,11 @@ export async function GET(
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
-    return NextResponse.json(event);
+    return NextResponse.json(event, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    });
   } catch (err) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
@@ -39,6 +47,10 @@ export async function PUT(
     if (!updated) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
+    revalidatePath('/admin/events');
+
     return NextResponse.json(updated);
   } catch (err) {
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
@@ -55,8 +67,13 @@ export async function DELETE(
     if (!success) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
+
+    revalidatePath('/');
+    revalidatePath('/admin/events');
+
     return NextResponse.json({ success: true });
   } catch (err) {
     return NextResponse.json({ error: 'Failed to delete event' }, { status: 500 });
   }
 }
+

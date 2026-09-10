@@ -1,10 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { revalidatePath } from 'next/cache';
 import { getAllUpcomingEvents, createUpcomingEvent } from '@/db';
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export async function GET() {
   try {
     const events = getAllUpcomingEvents();
-    return NextResponse.json(events);
+    return NextResponse.json(events, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+        'CDN-Cache-Control': 'no-store',
+        'Vercel-CDN-Cache-Control': 'no-store',
+      },
+    });
   } catch (err: any) {
     console.error('Failed to get upcoming events:', err);
     return NextResponse.json({ error: 'Failed to fetch events' }, { status: 500 });
@@ -33,6 +43,9 @@ export async function POST(req: NextRequest) {
       organizer: organizer || 'Event Production Team',
       description: description || '',
     });
+
+    revalidatePath('/');
+    revalidatePath('/admin/events');
 
     return NextResponse.json(event, { status: 201 });
   } catch (err: any) {

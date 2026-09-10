@@ -478,7 +478,12 @@
       "city": "Jaipur, Birla Auditorium",
       "posterUrl": "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80",
       "stipend": "₹2,500 / Day + Artist Pass & Meals",
-      "rolesNeeded": ["Auditorium Ushers", "Artist Backstage Escort", "VIP Lounge Protocol", "Ticketing Desk"],
+      "rolesNeeded": [
+        "Auditorium Ushers",
+        "Artist Backstage Escort",
+        "VIP Lounge Protocol",
+        "Ticketing Desk"
+      ],
       "vacancies": 30,
       "appliedCount": 142,
       "organizer": "BookMyShow Live & SHIFT Events",
@@ -492,7 +497,12 @@
       "city": "Jaipur, Hotel Clarks Amer Grounds",
       "posterUrl": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
       "stipend": "₹2,800 / Day + Official Certificate",
-      "rolesNeeded": ["Stage Sound Assist", "Crowd Flow Control", "Guest Hospitality", "Badge Issuance"],
+      "rolesNeeded": [
+        "Stage Sound Assist",
+        "Crowd Flow Control",
+        "Guest Hospitality",
+        "Badge Issuance"
+      ],
       "vacancies": 40,
       "appliedCount": 185,
       "organizer": "Teamwork Arts / BookMyShow",
@@ -506,7 +516,11 @@
       "city": "Jaipur, Rajasthan International Center (RIC)",
       "posterUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
       "stipend": "₹2,200 / Day + Meals & Experience Letter",
-      "rolesNeeded": ["Dignitary Protocol", "Exhibition Floor Manager", "Media Registration"],
+      "rolesNeeded": [
+        "Dignitary Protocol",
+        "Exhibition Floor Manager",
+        "Media Registration"
+      ],
       "vacancies": 25,
       "appliedCount": 78,
       "organizer": "RIC & Rajasthan Tourism",
@@ -520,7 +534,12 @@
       "city": "Jaipur, JECC Sitapura",
       "posterUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
       "stipend": "₹3,000 / Day + Meals & Transport Allowance",
-      "rolesNeeded": ["Hall Coordination", "QR Check-in Scanner", "Information Helpdesk", "Stall Liaison"],
+      "rolesNeeded": [
+        "Hall Coordination",
+        "QR Check-in Scanner",
+        "Information Helpdesk",
+        "Stall Liaison"
+      ],
       "vacancies": 50,
       "appliedCount": 210,
       "organizer": "JECC by Accor & BookMyShow Events",
@@ -534,7 +553,11 @@
       "city": "Jaipur, Jaipur Comedy Club / Taxila Auditorium",
       "posterUrl": "https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80",
       "stipend": "₹1,800 / Show + Free Show Passes",
-      "rolesNeeded": ["Seating Management", "Entry Scanner", "Audio Mic Assistant"],
+      "rolesNeeded": [
+        "Seating Management",
+        "Entry Scanner",
+        "Audio Mic Assistant"
+      ],
       "vacancies": 15,
       "appliedCount": 64,
       "organizer": "Jaipur Comedy Club & BMS",
