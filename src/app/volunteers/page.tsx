@@ -79,49 +79,49 @@ export default function VolunteersPage() {
   }, [debouncedSearch, location, skill, experience, availability, verified]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-gray-100">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
 
-      {/* Ambient background glow */}
-      <div className="fixed top-20 left-1/4 w-[32rem] h-[32rem] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
-      <div className="fixed bottom-10 right-10 w-[24rem] h-[24rem] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+      {/* Ambient background aura */}
+      <div className="fixed top-12 left-1/4 w-[35rem] h-[25rem] bg-indigo-200/40 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-1/2 right-10 w-[28rem] h-[25rem] bg-pink-200/30 rounded-full blur-[130px] pointer-events-none" />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
         
         {/* Header Banner */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-3">
-              ⚡ Real-Time Talent Network
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3">
+              ⚡ Verified Talent Network
             </div>
-            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-              Verified Event Crew
+            <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
+              Event Volunteers Directory
             </h1>
-            <p className="text-gray-400 text-sm sm:text-base mt-2 max-w-xl">
-              Filter top-tier volunteers by city, experience, verified status, and real-time availability.
+            <p className="text-slate-600 text-sm sm:text-base mt-2 max-w-xl">
+              Discover reliable crew members with verified past event experience, ratings, and instant availability.
             </p>
           </div>
           
           <a
             href="/join"
-            className="self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-gray-200 btn-3d-glass flex items-center gap-2"
+            className="self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-slate-800 bg-white border border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center gap-2"
           >
             <span>+ Register as Volunteer</span>
           </a>
         </div>
 
-        {/* 3D Glass Filter Panel */}
-        <div className="glass-panel p-6 rounded-3xl border border-white/10 shadow-2xl mb-10 space-y-4">
+        {/* Filter Bar */}
+        <div className="bg-white p-6 rounded-[2rem] border border-slate-200/80 shadow-3d-xl mb-10 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             
-            {/* Search input */}
+            {/* Search */}
             <div className="md:col-span-4 relative">
               <input
                 type="text"
-                placeholder="Search by name, skills or keywords..."
+                placeholder="Search by name, skill or role..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full bg-[#111827] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm text-slate-900 placeholder-slate-400 focus:outline-none focus:border-indigo-500 focus:bg-white transition-colors"
               />
             </div>
 
@@ -130,11 +130,11 @@ export default function VolunteersPage() {
               <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
-                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white"
               >
                 <option value="">All Locations</option>
                 {locations.map((loc) => (
-                  <option key={loc} value={loc} className="bg-[#111827] text-white">{loc}</option>
+                  <option key={loc} value={loc}>{loc}</option>
                 ))}
               </select>
             </div>
@@ -144,11 +144,11 @@ export default function VolunteersPage() {
               <select
                 value={skill}
                 onChange={(e) => setSkill(e.target.value)}
-                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white"
               >
                 <option value="">All Core Skills</option>
                 {skills.map((s) => (
-                  <option key={s} value={s} className="bg-[#111827] text-white">{s}</option>
+                  <option key={s} value={s}>{s}</option>
                 ))}
               </select>
             </div>
@@ -158,49 +158,49 @@ export default function VolunteersPage() {
               <select
                 value={availability}
                 onChange={(e) => setAvailability(e.target.value)}
-                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-3 text-sm text-slate-800 focus:outline-none focus:border-indigo-500 focus:bg-white"
               >
                 <option value="">Any Availability</option>
-                <option value="Available" className="bg-[#111827] text-white">Available Now</option>
-                <option value="Weekends" className="bg-[#111827] text-white">Weekends Only</option>
-                <option value="Full-time" className="bg-[#111827] text-white">Full-time Available</option>
+                <option value="Available">Available Now</option>
+                <option value="Weekends">Weekends Only</option>
+                <option value="Full-time">Full-time Available</option>
               </select>
             </div>
 
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-white/10 text-xs text-gray-400">
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
             <div className="flex items-center gap-4">
               <label className="flex items-center gap-2 cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={verified}
                   onChange={(e) => setVerified(e.target.checked)}
-                  className="rounded bg-[#111827] border-white/20 text-blue-600 focus:ring-0 w-4 h-4"
+                  className="rounded border-slate-300 text-indigo-600 focus:ring-0 w-4 h-4"
                 />
-                <span className="text-gray-300 font-medium">Show Verified Profiles Only</span>
+                <span className="text-slate-700 font-semibold">Verified Profiles Only</span>
               </label>
             </div>
 
             <div>
-              <span>Found <strong className="text-cyan-400">{volunteers.length}</strong> active profiles</span>
+              <span>Showing <strong className="text-indigo-600 font-bold">{volunteers.length}</strong> active crew members</span>
             </div>
           </div>
         </div>
 
-        {/* Directory Grid */}
+        {/* Volunteers Grid */}
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
-              <div key={n} className="glass-panel rounded-3xl h-96 animate-pulse border border-white/5" />
+              <div key={n} className="bg-white rounded-[1.75rem] h-96 animate-pulse border border-slate-200" />
             ))}
           </div>
         ) : volunteers.length === 0 ? (
-          <div className="glass-panel rounded-3xl p-16 text-center border border-white/10">
+          <div className="bg-white rounded-[2rem] p-16 text-center border border-slate-200 shadow-sm">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-bold text-white mb-2">No crew members found</h3>
-            <p className="text-gray-400 text-sm max-w-md mx-auto mb-6">
-              Try adjusting your search filters or clear location to discover volunteers across other regions.
+            <h3 className="text-xl font-bold text-slate-900 mb-2">No volunteers found</h3>
+            <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
+              Try adjusting your search criteria or resetting filters to see available volunteers.
             </p>
             <button
               onClick={() => {
@@ -211,13 +211,13 @@ export default function VolunteersPage() {
                 setAvailability('');
                 setVerified(false);
               }}
-              className="px-6 py-2.5 rounded-xl btn-3d-primary text-xs font-bold text-white"
+              className="px-6 py-2.5 rounded-xl btn-premium-gradient text-xs font-bold text-white shadow-md"
             >
-              Reset All Filters
+              Reset Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 perspective-1000">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {volunteers.map((volunteer) => (
               <VolunteerCard key={volunteer.id} volunteer={volunteer} />
             ))}

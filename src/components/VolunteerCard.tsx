@@ -19,10 +19,10 @@ export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
   const remainingSkills = volunteer.skills.length - 3;
 
   return (
-    <div className="glass-panel rounded-3xl overflow-hidden flex flex-col h-full border border-white/10 hover:border-blue-500/50 transform-card-3d group">
+    <div className="bg-white rounded-[1.75rem] overflow-hidden flex flex-col h-full border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_35px_-10px_rgba(99,102,241,0.15)] hover:-translate-y-1.5 transition-all duration-300 group">
       
-      {/* Card Visual Header / Photo */}
-      <div className="h-48 w-full bg-gradient-to-t from-[#0b0f19] to-gray-800 relative overflow-hidden">
+      {/* Visual Header / Avatar Photo */}
+      <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
         {volunteer.profileImage ? (
           <img 
             src={volunteer.profileImage} 
@@ -38,25 +38,25 @@ export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
           </div>
         )}
 
-        {/* Gradient shadow overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0d1322] via-transparent to-black/20" />
+        {/* Soft bottom vignette */}
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
 
-        {/* Floating status tag */}
+        {/* Verified Badge Tag */}
         <div className="absolute top-3 left-3">
           {volunteer.verified ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#0b0f19]/80 backdrop-blur-md text-emerald-400 border border-emerald-500/30 shadow-lg">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span> Verified Crew
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/95 backdrop-blur-md text-emerald-700 shadow-sm border border-emerald-100">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Verified Crew
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#0b0f19]/80 backdrop-blur-md text-cyan-400 border border-cyan-500/30">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/95 backdrop-blur-md text-indigo-700 shadow-sm border border-indigo-100">
               New Volunteer
             </span>
           )}
         </div>
 
-        {/* Floating Location Pill */}
-        <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-md text-gray-300 text-xs font-medium border border-white/10">
-          <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Location Pill */}
+        <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white/90 backdrop-blur-md text-slate-800 text-xs font-bold shadow-sm">
+          <svg className="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
           </svg>
@@ -65,50 +65,50 @@ export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
       </div>
       
       {/* Content Section */}
-      <div className="p-5 flex flex-col flex-grow bg-[#0d1322]/80">
+      <div className="p-5 flex flex-col flex-grow bg-white">
         <div className="flex justify-between items-start mb-3">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2 group-hover:text-cyan-300 transition-colors">
+          <h3 className="text-lg font-bold text-slate-900 flex items-center gap-1.5 group-hover:text-indigo-600 transition-colors">
             {volunteer.name}
             {volunteer.verified && <VerifiedBadge size="sm" />}
           </h3>
         </div>
         
         {/* Metric Badges */}
-        <div className="grid grid-cols-2 gap-2 text-xs mb-4 p-2.5 rounded-2xl bg-white/5 border border-white/5 text-gray-300">
+        <div className="grid grid-cols-2 gap-2 text-xs mb-4 p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 text-slate-700">
           <div>
-            <span className="text-gray-500 text-[10px] uppercase font-bold block">Experience</span>
-            <span className="font-bold text-white">{volunteer.yearsExperience}+ Years</span>
+            <span className="text-slate-400 text-[10px] uppercase font-bold block">Experience</span>
+            <span className="font-extrabold text-slate-900">{volunteer.yearsExperience}+ Years</span>
           </div>
-          <div className="border-l border-white/10 pl-3">
-            <span className="text-gray-500 text-[10px] uppercase font-bold block">Events</span>
-            <span className="font-bold text-cyan-400">{volunteer.eventsCompleted} Done</span>
+          <div className="border-l border-slate-200 pl-3">
+            <span className="text-slate-400 text-[10px] uppercase font-bold block">Events</span>
+            <span className="font-extrabold text-indigo-600">{volunteer.eventsCompleted} Events</span>
           </div>
         </div>
         
         {/* Skills Chips */}
-        <div className="flex flex-wrap gap-1.5 mb-6 flex-grow">
+        <div className="flex flex-wrap gap-1.5 mb-5 flex-grow">
           {visibleSkills.map((skill, index) => (
             <span 
               key={index} 
-              className="text-xs px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 font-medium"
+              className="text-xs px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 font-semibold"
             >
               {skill}
             </span>
           ))}
           {remainingSkills > 0 && (
-            <span className="text-xs px-2 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 font-semibold">
+            <span className="text-xs px-2 py-1 rounded-lg bg-indigo-50 text-indigo-600 font-bold border border-indigo-100">
               +{remainingSkills}
             </span>
           )}
         </div>
         
-        {/* 3D Profile Button */}
+        {/* Action Button */}
         <Link 
           href={`/volunteers/${volunteer.id}`}
-          className="w-full py-3 px-4 rounded-xl text-center text-sm font-bold text-white btn-3d-primary mt-auto flex items-center justify-center gap-2"
+          className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold text-slate-700 bg-slate-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-pink-600 hover:text-white transition-all mt-auto flex items-center justify-center gap-1.5 shadow-sm"
         >
-          <span>View 3D Profile</span>
-          <span className="text-cyan-200">→</span>
+          <span>View Profile</span>
+          <span>→</span>
         </Link>
       </div>
     </div>

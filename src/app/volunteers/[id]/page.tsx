@@ -45,24 +45,20 @@ export default function VolunteerProfilePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
-        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="animate-pulse">
-            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start mb-12">
-              <div className="w-48 h-48 bg-gray-200 rounded-2xl"></div>
+        <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="animate-pulse space-y-8">
+            <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
+              <div className="w-48 h-48 bg-slate-200 rounded-3xl"></div>
               <div className="flex-1 space-y-4 w-full">
-                <div className="h-10 bg-gray-200 rounded w-1/2 mx-auto md:mx-0"></div>
-                <div className="h-6 bg-gray-200 rounded w-1/3 mx-auto md:mx-0"></div>
-                <div className="flex justify-center md:justify-start gap-4 pt-4">
-                  <div className="h-8 bg-gray-200 rounded-full w-24"></div>
-                  <div className="h-8 bg-gray-200 rounded-full w-24"></div>
+                <div className="h-10 bg-slate-200 rounded-xl w-1/2"></div>
+                <div className="h-6 bg-slate-200 rounded-lg w-1/3"></div>
+                <div className="flex gap-4 pt-4">
+                  <div className="h-10 bg-slate-200 rounded-xl w-28"></div>
+                  <div className="h-10 bg-slate-200 rounded-xl w-28"></div>
                 </div>
               </div>
-            </div>
-            <div className="space-y-4">
-              <div className="h-6 bg-gray-200 rounded w-1/4"></div>
-              <div className="h-24 bg-gray-200 rounded w-full"></div>
             </div>
           </div>
         </main>
@@ -73,13 +69,13 @@ export default function VolunteerProfilePage() {
 
   if (error || !volunteer) {
     return (
-      <div className="min-h-screen flex flex-col bg-white">
+      <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center py-20 px-4">
-          <h1 className="text-3xl font-bold text-gray-900 mb-4">Volunteer Not Found</h1>
-          <p className="text-gray-600 mb-8">The profile you are looking for doesn't exist or has been removed.</p>
-          <Link href="/volunteers" className="bg-blue-600 text-white px-6 py-2.5 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Back to Volunteer Directory
+          <h1 className="text-3xl font-black text-slate-900 mb-3">Volunteer Not Found</h1>
+          <p className="text-slate-500 mb-8">The profile you are looking for doesn't exist or has been removed.</p>
+          <Link href="/volunteers" className="btn-premium-gradient px-8 py-3.5 rounded-2xl font-bold shadow-xl">
+            ← Back to Directory
           </Link>
         </main>
         <Footer />
@@ -87,7 +83,7 @@ export default function VolunteerProfilePage() {
     );
   }
 
-  // Format all images from experiences for ImageGallery
+  // Format images
   const allImages: { url: string; caption?: string }[] = [];
   if (volunteer.experiences && Array.isArray(volunteer.experiences)) {
     for (const exp of volunteer.experiences) {
@@ -112,95 +108,116 @@ export default function VolunteerProfilePage() {
       : volunteer.available !== false;
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
-      <main className="flex-1">
-        {/* Top Section */}
-        <section className="bg-gray-50 py-12 border-b border-gray-200">
+
+      {/* Ambient background glow */}
+      <div className="fixed top-12 left-1/3 w-[35rem] h-[25rem] bg-indigo-200/35 rounded-full blur-[130px] pointer-events-none" />
+      <div className="fixed top-1/2 right-12 w-[30rem] h-[25rem] bg-pink-200/25 rounded-full blur-[130px] pointer-events-none" />
+
+      <main className="flex-1 relative z-10">
+        {/* Top Profile Header Section */}
+        <section className="bg-white/80 backdrop-blur-xl py-14 border-b border-slate-200/80 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-              <div className="flex-shrink-0">
+              
+              {/* Photo with 3D shadow */}
+              <div className="flex-shrink-0 relative">
                 {volunteer.profileImage ? (
                   <img
                     src={volunteer.profileImage}
                     alt={volunteer.name}
-                    className="w-48 h-48 rounded-2xl object-cover shadow-sm border border-gray-200"
+                    className="w-44 h-44 rounded-3xl object-cover shadow-3d-xl border-2 border-white"
                   />
                 ) : (
                   <div
-                    className="w-48 h-48 rounded-2xl flex items-center justify-center text-5xl font-bold text-white shadow-sm"
+                    className="w-44 h-44 rounded-3xl flex items-center justify-center text-5xl font-black text-white shadow-3d-xl"
                     style={{ backgroundColor: generateAvatarColor(volunteer.name) }}
                   >
                     {getInitials(volunteer.name)}
                   </div>
                 )}
+                {volunteer.verified && (
+                  <span className="absolute -bottom-2 -right-2 bg-indigo-600 text-white rounded-full p-1.5 shadow-md">
+                    <VerifiedBadge size="sm" />
+                  </span>
+                )}
               </div>
-              <div className="flex-1 text-center md:text-left pt-2">
-                <div className="flex flex-col md:flex-row md:items-center gap-3 mb-2 justify-center md:justify-start">
-                  <h1 className="text-4xl font-bold text-gray-900">{volunteer.name}</h1>
-                  {volunteer.verified && <VerifiedBadge size="md" />}
+
+              {/* Volunteer Details */}
+              <div className="flex-1 text-center md:text-left pt-1 space-y-3">
+                <div className="flex flex-col md:flex-row md:items-center gap-3 justify-center md:justify-start">
+                  <h1 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">{volunteer.name}</h1>
                 </div>
-                <p className="text-xl text-gray-600 mb-6 flex items-center justify-center md:justify-start gap-2">
-                  <span className="text-gray-400">📍</span> {volunteer.location || 'Location not specified'}
+
+                <p className="text-base font-semibold text-slate-500 flex items-center justify-center md:justify-start gap-1.5">
+                  <span className="text-indigo-600">📍</span> {volunteer.location || 'Location not specified'}
                 </p>
                 
-                <div className="flex flex-wrap gap-3 justify-center md:justify-start">
-                  <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm flex flex-col">
-                    <span className="text-xs text-gray-500 font-medium">Experience</span>
-                    <span className="font-semibold text-gray-900">{volunteer.yearsExperience || 0}+ Years</span>
+                {/* 3D Stat Badges */}
+                <div className="flex flex-wrap gap-2.5 justify-center md:justify-start pt-2">
+                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Experience</span>
+                    <span className="font-black text-slate-900">{volunteer.yearsExperience || 0}+ Years</span>
                   </div>
-                  <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm flex flex-col">
-                    <span className="text-xs text-gray-500 font-medium">Events</span>
-                    <span className="font-semibold text-gray-900">{volunteer.eventsCompleted || 0} Completed</span>
+
+                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Events Completed</span>
+                    <span className="font-black text-indigo-600">{volunteer.eventsCompleted || 0} Events</span>
                   </div>
+
                   {volunteer.age && (
-                    <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm flex flex-col">
-                      <span className="text-xs text-gray-500 font-medium">Age</span>
-                      <span className="font-semibold text-gray-900">{volunteer.age} Yrs</span>
+                    <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase">Age</span>
+                      <span className="font-black text-slate-900">{volunteer.age} Yrs</span>
                     </div>
                   )}
-                  <div className="bg-white border border-gray-200 px-4 py-2 rounded-lg shadow-sm flex flex-col">
-                    <span className="text-xs text-gray-500 font-medium">Status</span>
-                    <span className={`font-semibold text-xs mt-1 ${isAvailable ? 'text-emerald-600' : 'text-gray-500'}`}>
-                      {isAvailable ? '● Available' : '○ Unavailable'}
+
+                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">Status</span>
+                    <span className={`font-black text-xs mt-0.5 ${isAvailable ? 'text-emerald-600' : 'text-slate-500'}`}>
+                      {isAvailable ? '● Available' : '○ Busy'}
                     </span>
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
         </section>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
+        {/* Profile Content */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
+          
           {/* About */}
-          <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">About</h2>
-            <div className="prose text-gray-600 max-w-none">
+          <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900 mb-3">About {volunteer.name}</h2>
+            <div className="text-slate-600 leading-relaxed text-sm sm:text-base">
               {volunteer.bio ? (
-                <p className="whitespace-pre-wrap leading-relaxed">{volunteer.bio}</p>
+                <p className="whitespace-pre-wrap">{volunteer.bio}</p>
               ) : (
-                <p className="italic text-gray-400">No bio provided.</p>
+                <p className="text-slate-400 italic">No biography provided yet.</p>
               )}
+            </div>
+
+            {/* Skills */}
+            <div className="mt-6 pt-6 border-t border-slate-100">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Core Skills</h3>
+              <div className="flex flex-wrap gap-2">
+                {volunteer.skills && volunteer.skills.length > 0 ? (
+                  volunteer.skills.map((skill: string, index: number) => (
+                    <SkillTag key={index} skill={skill} />
+                  ))
+                ) : (
+                  <span className="text-slate-400 text-sm">No skills listed.</span>
+                )}
+              </div>
             </div>
           </section>
 
-          {/* Skills */}
-          <section className="border-t border-gray-100 pt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">Skills</h2>
-            {volunteer.skills && volunteer.skills.length > 0 ? (
-              <div className="flex flex-wrap gap-2">
-                {volunteer.skills.map((skill: string) => (
-                  <SkillTag key={skill} skill={skill} />
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-500 italic">No skills listed.</p>
-            )}
-          </section>
-
-          {/* Experience */}
-          <section className="border-t border-gray-100 pt-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Event Experience</h2>
+          {/* Event Experience Cards */}
+          <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+            <h2 className="text-xl font-bold text-slate-900 mb-6">Verified Past Events Experience</h2>
             {volunteer.experiences && volunteer.experiences.length > 0 ? (
               <div className="space-y-6">
                 {volunteer.experiences.map((exp: any) => (
@@ -208,50 +225,38 @@ export default function VolunteerProfilePage() {
                 ))}
               </div>
             ) : (
-              <div className="bg-gray-50 rounded-xl p-8 text-center border border-gray-200">
-                <p className="text-gray-500">No experience records yet.</p>
+              <div className="bg-slate-50 rounded-2xl p-8 text-center border border-slate-200">
+                <p className="text-slate-500 text-sm">No specific event records logged yet.</p>
               </div>
             )}
           </section>
 
-          {/* Experience Gallery */}
+          {/* Photos Gallery */}
           {allImages.length > 0 && (
-            <section className="border-t border-gray-100 pt-8">
-              <h2 className="text-2xl font-bold text-gray-900 mb-6">Experience Gallery</h2>
+            <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-6">On-Ground Event Photos</h2>
               <ImageGallery images={allImages} />
             </section>
           )}
 
-          {/* Availability & Request CTA */}
-          <section className="border-t border-gray-100 pt-8 pb-12">
-            <div className="bg-gray-50 rounded-2xl p-8 border border-gray-200 flex flex-col md:flex-row items-center justify-between gap-6">
+          {/* Request / Hire CTA */}
+          <section className="pb-12">
+            <div className="bg-gradient-to-tr from-indigo-900 via-slate-900 to-purple-950 rounded-[2rem] p-8 sm:p-10 text-white shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
               <div>
-                <h2 className="text-xl font-bold text-gray-900 mb-2">Interested in hiring this volunteer?</h2>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-600 text-sm">Status:</span>
-                  {isAvailable ? (
-                    <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-xs font-semibold">
-                      ✓ Available for Events
-                    </span>
-                  ) : (
-                    <span className="bg-gray-200 text-gray-700 px-3 py-1 rounded-full text-xs font-semibold">
-                      Currently Unavailable
-                    </span>
-                  )}
-                </div>
+                <h2 className="text-2xl font-black mb-2">Want to book {volunteer.name} for your event?</h2>
+                <p className="text-slate-300 text-sm max-w-md">
+                  Submit your event details and get connected with {volunteer.name} directly.
+                </p>
               </div>
               <Link 
                 href={`/request?volunteer=${id}&name=${encodeURIComponent(volunteer.name)}`} 
-                className={`px-8 py-3 rounded-lg font-medium text-center transition-colors ${
-                  isAvailable 
-                    ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-sm' 
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed pointer-events-none'
-                }`}
+                className="btn-premium-gradient font-bold px-8 py-4 rounded-2xl text-sm shadow-xl flex-shrink-0"
               >
-                Request this Volunteer
+                Request this Volunteer →
               </Link>
             </div>
           </section>
+
         </div>
       </main>
       <Footer />

@@ -246,13 +246,13 @@ export default function JoinVolunteerPage() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
                 href={`/volunteers/${createdVolunteer.id}`}
-                className="bg-blue-600 hover:bg-blue-700 text-white font-medium px-8 py-3 rounded-lg transition-colors text-center shadow-sm"
+                className="btn-premium-gradient font-bold px-8 py-3.5 rounded-2xl shadow-xl text-center"
               >
                 View My Live Profile →
               </Link>
               <Link
                 href="/volunteers"
-                className="border border-gray-300 hover:bg-gray-50 text-gray-700 font-medium px-8 py-3 rounded-lg transition-colors text-center"
+                className="border border-slate-300 hover:bg-slate-50 text-slate-700 font-bold px-8 py-3.5 rounded-2xl transition-colors text-center"
               >
                 Explore Volunteer Directory
               </Link>
@@ -265,20 +265,24 @@ export default function JoinVolunteerPage() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      {/* Background Aurora Orbs */}
+      <div className="fixed top-10 left-1/3 w-[35rem] h-[25rem] bg-indigo-200/35 rounded-full blur-[120px] pointer-events-none" />
+      <div className="fixed top-1/2 right-10 w-[30rem] h-[25rem] bg-pink-200/25 rounded-full blur-[130px] pointer-events-none" />
+
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-14 relative z-10">
         {/* Header */}
-        <div className="mb-10 text-center">
-          <div className="inline-block bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+        <div className="mb-12 text-center">
+          <div className="inline-block bg-indigo-50 text-indigo-700 text-xs font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3 border border-indigo-100">
             Volunteer Registration
           </div>
-          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
+          <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight mb-3">
             Join Crewly as an Event Volunteer
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Create your verified profile, showcase your past event experience and photos, and get discovered by top event companies.
+          <p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto">
+            Create your verified profile, showcase your past event photos, and get discovered by top event companies nationwide.
           </p>
         </div>
 
@@ -703,7 +707,7 @@ export default function JoinVolunteerPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-8 rounded-xl transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed text-base flex items-center justify-center gap-2"
+              className="w-full btn-premium-gradient font-bold py-4 px-8 rounded-2xl shadow-xl disabled:opacity-50 disabled:cursor-not-allowed text-base flex items-center justify-center gap-2"
             >
               {loading ? (
                 <>
