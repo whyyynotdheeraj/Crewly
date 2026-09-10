@@ -234,15 +234,15 @@ export default function HomePage() {
             {/* Header with Live Pulse */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 pb-6 border-b border-slate-100">
               <div>
-                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-pink-50 border border-pink-100 text-pink-700 text-xs font-bold uppercase tracking-wider mb-3">
-                  <span className="w-2 h-2 rounded-full bg-pink-500 animate-ping"></span>
-                  <span>Live Volunteer Gigs & Openings</span>
+                <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-red-50 border border-red-100 text-red-700 text-xs font-bold uppercase tracking-wider mb-3">
+                  <span className="w-2 h-2 rounded-full bg-red-500 animate-ping"></span>
+                  <span>Live BookMyShow Jaipur Events & Gigs</span>
                 </div>
                 <h2 className="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight">
-                  Upcoming Events Hiring Volunteers
+                  Upcoming Jaipur Events Hiring Crew
                 </h2>
                 <p className="text-slate-600 text-sm sm:text-base mt-1.5 max-w-xl">
-                  Browse official upcoming music festivals, tech conferences, and summits. Apply directly to secure your volunteer spot and event perks.
+                  Real upcoming festivals, comedy specials, and summits at Birla Auditorium, JECC Sitapura, RIC, and Clarks Amer. Apply for volunteer passes & daily stipends.
                 </p>
               </div>
 
@@ -251,7 +251,7 @@ export default function HomePage() {
                   href="/join"
                   className="px-5 py-2.5 rounded-xl text-xs font-bold text-white btn-premium-gradient shadow-md flex items-center gap-1.5"
                 >
-                  <span>Register as General Volunteer</span>
+                  <span>Register as Volunteer</span>
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                   </svg>
@@ -260,7 +260,7 @@ export default function HomePage() {
             </div>
 
             {/* Event Cards Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {events.map((evt) => (
                 <UpcomingEventCard key={evt.id} event={evt} />
               ))}
