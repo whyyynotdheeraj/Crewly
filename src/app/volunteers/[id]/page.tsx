@@ -151,7 +151,11 @@ export default function VolunteerProfilePage() {
                 </div>
 
                 <p className="text-base font-semibold text-slate-500 flex items-center justify-center md:justify-start gap-1.5">
-                  <span className="text-indigo-600">📍</span> {volunteer.location || 'Location not specified'}
+                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                  <span>{volunteer.location || 'Location not specified'}</span>
                 </p>
                 
                 {/* 3D Stat Badges */}
@@ -175,8 +179,9 @@ export default function VolunteerProfilePage() {
 
                   <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Status</span>
-                    <span className={`font-black text-xs mt-0.5 ${isAvailable ? 'text-emerald-600' : 'text-slate-500'}`}>
-                      {isAvailable ? '● Available' : '○ Busy'}
+                    <span className={`font-black text-xs mt-0.5 flex items-center gap-1.5 ${isAvailable ? 'text-emerald-600' : 'text-slate-500'}`}>
+                      <span className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                      {isAvailable ? 'Available Now' : 'Busy'}
                     </span>
                   </div>
                 </div>

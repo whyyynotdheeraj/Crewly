@@ -91,8 +91,11 @@ export default function VolunteersPage() {
         {/* Header Banner */}
         <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3">
-              ⚡ Verified Talent Network
+            <div className="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-indigo-50 border border-indigo-100 text-indigo-700 text-xs font-bold uppercase tracking-wider mb-3">
+              <svg className="w-3.5 h-3.5 fill-current text-indigo-600" viewBox="0 0 24 24">
+                <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+              </svg>
+              <span>Verified Talent Network</span>
             </div>
             <h1 className="text-3xl sm:text-5xl font-black text-slate-900 tracking-tight">
               Event Volunteers Directory
@@ -104,7 +107,7 @@ export default function VolunteersPage() {
           
           <a
             href="/join"
-            className="self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-slate-800 bg-white border border-slate-200 shadow-sm hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center gap-2"
+            className="self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-slate-800 bg-white border border-slate-200 shadow-xs hover:border-indigo-400 hover:text-indigo-600 transition-all flex items-center gap-2"
           >
             <span>+ Register as Volunteer</span>
           </a>
@@ -196,8 +199,12 @@ export default function VolunteersPage() {
             ))}
           </div>
         ) : volunteers.length === 0 ? (
-          <div className="bg-white rounded-[2rem] p-16 text-center border border-slate-200 shadow-sm">
-            <div className="text-4xl mb-4">🔍</div>
+          <div className="bg-white rounded-[2rem] p-16 text-center border border-slate-200 shadow-xs">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-600 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
             <h3 className="text-xl font-bold text-slate-900 mb-2">No volunteers found</h3>
             <p className="text-slate-500 text-sm max-w-md mx-auto mb-6">
               Try adjusting your search criteria or resetting filters to see available volunteers.

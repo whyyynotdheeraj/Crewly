@@ -108,7 +108,9 @@ export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
           className="w-full py-2.5 px-4 rounded-xl text-center text-xs font-bold text-slate-700 bg-slate-100 hover:bg-gradient-to-r hover:from-indigo-600 hover:to-pink-600 hover:text-white transition-all mt-auto flex items-center justify-center gap-1.5 shadow-sm"
         >
           <span>View Profile</span>
-          <span>→</span>
+          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+          </svg>
         </Link>
       </div>
     </div>

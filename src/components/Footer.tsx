@@ -1,5 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
+import Logo from './Logo';
 
 export default function Footer() {
   return (
@@ -11,15 +12,8 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12">
           
           <div className="md:col-span-2 space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-500 via-purple-500 to-pink-500 p-[2px] shadow-lg shadow-indigo-500/20">
-                <div className="w-full h-full bg-slate-900 rounded-[10px] flex items-center justify-center">
-                  <span className="text-base font-black text-white">C</span>
-                </div>
-              </div>
-              <span className="text-2xl font-black text-white tracking-tight">Crewly</span>
-            </div>
-            <p className="text-slate-400 text-sm max-w-sm leading-relaxed">
+            <Logo variant="light" size="md" />
+            <p className="text-slate-400 text-sm max-w-sm leading-relaxed pt-2">
               India's premier marketplace for verified event workforce. Supporting concerts, tech conferences, trade expos, and VIP galas nationwide.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -53,8 +47,11 @@ export default function Footer() {
             <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Crew & Volunteers</h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/join" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
-                  Create Volunteer Profile →
+                <Link href="/join" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors flex items-center gap-1">
+                  <span>Create Volunteer Profile</span>
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                  </svg>
                 </Link>
               </li>
               <li>

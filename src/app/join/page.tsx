@@ -212,8 +212,10 @@ export default function JoinVolunteerPage() {
         <Navbar />
         <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16">
           <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 md:p-12 text-center">
-            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6">
-              ✓
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
             <h1 className="text-3xl font-bold text-gray-900 mb-3">
               Registration Successful!
@@ -226,7 +228,10 @@ export default function JoinVolunteerPage() {
               <div className="flex items-center justify-between">
                 <span className="text-gray-500 text-sm">Profile Status:</span>
                 <span className="inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-semibold border border-emerald-200">
-                  <span>✓</span> Verified Profile
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                  </svg>
+                  <span>Verified Profile</span>
                 </span>
               </div>
               <div className="flex items-center justify-between">
@@ -287,8 +292,10 @@ export default function JoinVolunteerPage() {
         </div>
 
         {error && (
-          <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl flex items-center gap-3">
-            <span className="text-xl">⚠️</span>
+          <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3">
+            <svg className="w-5 h-5 flex-shrink-0 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
             <span className="text-sm font-medium">{error}</span>
           </div>
         )}
@@ -343,8 +350,11 @@ export default function JoinVolunteerPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                 />
-                <p className="text-xs text-gray-400 mt-1">
-                  🔒 Kept private. Never exposed publicly to the general public.
+                <p className="text-xs text-slate-400 mt-1 flex items-center gap-1.5">
+                  <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                  <span>Kept private. Never exposed publicly to the general public.</span>
                 </p>
               </div>
 

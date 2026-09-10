@@ -68,14 +68,16 @@ export default function RequestPage() {
         <Navbar />
         <main className="flex-1 flex items-center justify-center py-12 px-4">
           <div className="max-w-md w-full bg-white rounded-xl shadow-sm p-8 text-center border border-gray-100">
-            <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">
-              ✓
+            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Request received!</h2>
-            <p className="text-gray-600 mb-8">
-              We'll review your requirement and get back to you shortly.
+            <h2 className="text-2xl font-bold text-slate-900 mb-2">Request received!</h2>
+            <p className="text-slate-600 mb-8 text-sm">
+              We'll review your requirement and connect you with matching volunteers shortly.
             </p>
-            <Link href="/" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+            <Link href="/" className="inline-block btn-premium-gradient px-8 py-3 rounded-xl font-bold shadow-lg">
               Return Home
             </Link>
           </div>
