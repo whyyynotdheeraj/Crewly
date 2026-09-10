@@ -79,143 +79,128 @@ export default function VolunteersPage() {
   }, [debouncedSearch, location, skill, experience, availability, verified]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-[#0b0f19] text-gray-100">
       <Navbar />
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+      {/* Ambient background glow */}
+      <div className="fixed top-20 left-1/4 w-[32rem] h-[32rem] bg-blue-600/15 rounded-full blur-[140px] pointer-events-none" />
+      <div className="fixed bottom-10 right-10 w-[24rem] h-[24rem] bg-indigo-600/10 rounded-full blur-[120px] pointer-events-none" />
+
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 relative z-10">
+        
+        {/* Header Banner */}
+        <div className="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Find Event Volunteers</h1>
-            <p className="text-gray-600">Browse verified, experienced event staff ready for your next event.</p>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-white/5 border border-white/10 text-cyan-400 text-xs font-semibold uppercase tracking-wider mb-3">
+              ⚡ Real-Time Talent Network
+            </div>
+            <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
+              Verified Event Crew
+            </h1>
+            <p className="text-gray-400 text-sm sm:text-base mt-2 max-w-xl">
+              Filter top-tier volunteers by city, experience, verified status, and real-time availability.
+            </p>
           </div>
+          
           <a
             href="/join"
-            className="self-start md:self-auto bg-white border border-blue-600 text-blue-600 hover:bg-blue-50 font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+            className="self-start md:self-auto px-5 py-3 rounded-xl text-sm font-bold text-gray-200 btn-3d-glass flex items-center gap-2"
           >
-            + Register as Volunteer
+            <span>+ Register as Volunteer</span>
           </a>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white p-6 rounded-xl shadow-sm mb-8 space-y-4 border border-gray-100">
+        {/* 3D Glass Filter Panel */}
+        <div className="glass-panel p-6 rounded-3xl border border-white/10 shadow-2xl mb-10 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-            {/* Search */}
-            <div className="md:col-span-12 lg:col-span-3">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Search
-              </label>
+            
+            {/* Search input */}
+            <div className="md:col-span-4 relative">
               <input
                 type="text"
-                placeholder="Search name, skill, or city..."
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm"
+                placeholder="Search by name, skills or keywords..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
+                className="w-full bg-[#111827] border border-white/15 rounded-xl px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none focus:border-cyan-400 transition-colors"
               />
             </div>
 
-            {/* Location */}
-            <div className="md:col-span-6 lg:col-span-2">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Location
-              </label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-sm bg-white"
+            {/* Location selector */}
+            <div className="md:col-span-2">
+              <select
                 value={location}
                 onChange={(e) => setLocation(e.target.value)}
+                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
               >
                 <option value="">All Locations</option>
-                {locations.map(l => <option key={l} value={l}>{l}</option>)}
+                {locations.map((loc) => (
+                  <option key={loc} value={loc} className="bg-[#111827] text-white">{loc}</option>
+                ))}
               </select>
             </div>
 
-            {/* Skill */}
-            <div className="md:col-span-6 lg:col-span-2">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Skill
-              </label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-sm bg-white"
+            {/* Skill selector */}
+            <div className="md:col-span-3">
+              <select
                 value={skill}
                 onChange={(e) => setSkill(e.target.value)}
+                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
               >
-                <option value="">All Skills</option>
-                {skills.map(s => <option key={s} value={s}>{s}</option>)}
-              </select>
-            </div>
-
-            {/* Experience */}
-            <div className="md:col-span-6 lg:col-span-2">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Experience
-              </label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-sm bg-white"
-                value={experience}
-                onChange={(e) => setExperience(e.target.value)}
-              >
-                <option value="">Any Experience</option>
-                <option value="1">1+ Years</option>
-                <option value="2">2+ Years</option>
-                <option value="3">3+ Years</option>
-                <option value="5">5+ Years</option>
+                <option value="">All Core Skills</option>
+                {skills.map((s) => (
+                  <option key={s} value={s} className="bg-[#111827] text-white">{s}</option>
+                ))}
               </select>
             </div>
 
             {/* Availability */}
-            <div className="md:col-span-6 lg:col-span-2">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">
-                Availability
-              </label>
-              <select 
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 outline-none text-sm bg-white"
+            <div className="md:col-span-3">
+              <select
                 value={availability}
                 onChange={(e) => setAvailability(e.target.value)}
+                className="w-full bg-[#111827] border border-white/15 rounded-xl px-3 py-3 text-sm text-gray-200 focus:outline-none focus:border-cyan-400"
               >
-                <option value="">All Availability</option>
-                <option value="available">Available Only</option>
-                <option value="unavailable">Unavailable Only</option>
+                <option value="">Any Availability</option>
+                <option value="Available" className="bg-[#111827] text-white">Available Now</option>
+                <option value="Weekends" className="bg-[#111827] text-white">Weekends Only</option>
+                <option value="Full-time" className="bg-[#111827] text-white">Full-time Available</option>
               </select>
             </div>
 
-            {/* Verified toggle */}
-            <div className="md:col-span-12 lg:col-span-1 flex items-end pb-2">
-              <label className="flex items-center space-x-2 cursor-pointer select-none">
-                <input 
-                  type="checkbox" 
-                  className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600"
+          </div>
+
+          <div className="flex flex-wrap items-center justify-between gap-4 pt-3 border-t border-white/10 text-xs text-gray-400">
+            <div className="flex items-center gap-4">
+              <label className="flex items-center gap-2 cursor-pointer select-none">
+                <input
+                  type="checkbox"
                   checked={verified}
                   onChange={(e) => setVerified(e.target.checked)}
+                  className="rounded bg-[#111827] border-white/20 text-blue-600 focus:ring-0 w-4 h-4"
                 />
-                <span className="text-gray-700 font-medium text-xs whitespace-nowrap">Verified</span>
+                <span className="text-gray-300 font-medium">Show Verified Profiles Only</span>
               </label>
+            </div>
+
+            <div>
+              <span>Found <strong className="text-cyan-400">{volunteers.length}</strong> active profiles</span>
             </div>
           </div>
         </div>
 
-        {/* Results count */}
-        <div className="mb-4 text-gray-600 text-sm font-medium">
-          {!loading && `Showing ${volunteers.length} volunteer${volunteers.length !== 1 ? 's' : ''}`}
-        </div>
-
-        {/* Volunteers Grid */}
+        {/* Directory Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="bg-white rounded-xl shadow-sm h-[320px] animate-pulse p-6 flex flex-col border border-gray-100">
-                <div className="w-full h-40 bg-gray-200 rounded-lg mb-4"></div>
-                <div className="space-y-2 flex-1">
-                  <div className="h-5 bg-gray-200 rounded w-1/2"></div>
-                  <div className="h-4 bg-gray-200 rounded w-1/3"></div>
-                  <div className="h-4 bg-gray-200 rounded w-full pt-2"></div>
-                </div>
-              </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((n) => (
+              <div key={n} className="glass-panel rounded-3xl h-96 animate-pulse border border-white/5" />
             ))}
           </div>
         ) : volunteers.length === 0 ? (
-          <div className="bg-white rounded-xl p-12 text-center border border-gray-200">
+          <div className="glass-panel rounded-3xl p-16 text-center border border-white/10">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">No volunteers found</h3>
-            <p className="text-gray-500 max-w-md mx-auto mb-6">
-              We couldn't find any volunteers matching your search criteria. Try adjusting or clearing your filters.
+            <h3 className="text-xl font-bold text-white mb-2">No crew members found</h3>
+            <p className="text-gray-400 text-sm max-w-md mx-auto mb-6">
+              Try adjusting your search filters or clear location to discover volunteers across other regions.
             </p>
             <button
               onClick={() => {
@@ -226,19 +211,21 @@ export default function VolunteersPage() {
                 setAvailability('');
                 setVerified(false);
               }}
-              className="bg-blue-50 text-blue-600 px-4 py-2 rounded-lg font-medium text-sm hover:bg-blue-100 transition-colors"
+              className="px-6 py-2.5 rounded-xl btn-3d-primary text-xs font-bold text-white"
             >
               Reset All Filters
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {volunteers.map(volunteer => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 perspective-1000">
+            {volunteers.map((volunteer) => (
               <VolunteerCard key={volunteer.id} volunteer={volunteer} />
             ))}
           </div>
         )}
+
       </main>
+
       <Footer />
     </div>
   );
