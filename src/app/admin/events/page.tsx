@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 
 interface UpcomingEvent {
@@ -27,6 +27,10 @@ export default function AdminEventsPage() {
   // Editing state
   const [editingEvent, setEditingEvent] = useState<UpcomingEvent | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+
+  // File upload state
+  const [uploadingPoster, setUploadingPoster] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form inputs
   const [formData, setFormData] = useState({
@@ -56,6 +60,45 @@ export default function AdminEventsPage() {
       setError('Failed to load events');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleLaptopPosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || !e.target.files[0]) return;
+    const file = e.target.files[0];
+
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file (JPG, PNG, WebP)');
+      return;
+    }
+
+    setUploadingPoster(true);
+    setError('');
+
+    const uploadFormData = new FormData();
+    uploadFormData.append('file', file);
+    uploadFormData.append('type', 'experience');
+
+    try {
+      const res = await fetch('/api/upload', {
+        method: 'POST',
+        body: uploadFormData,
+      });
+
+      if (!res.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        setFormData((prev) => ({ ...prev, posterUrl: data.url }));
+        setSuccess('Poster photo uploaded from laptop successfully!');
+      }
+    } catch (err) {
+      console.error(err);
+      setError('Failed to upload image from laptop. Please try again.');
+    } finally {
+      setUploadingPoster(false);
     }
   };
 
@@ -367,27 +410,77 @@ export default function AdminEventsPage() {
                 </div>
               </div>
 
-              {/* Poster Image URL */}
-              <div>
-                <label className="block text-xs font-bold uppercase text-gray-700 mb-1">
-                  Poster Image URL *
-                </label>
-                <input
-                  type="url"
-                  required
-                  value={formData.posterUrl}
-                  onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
-                  placeholder="https://..."
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-indigo-600"
-                />
+              {/* Event Poster Photo (Laptop Upload + URL Option) */}
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold uppercase text-gray-800">
+                    Event Poster Photo *
+                  </label>
+                  <span className="text-[11px] text-indigo-600 font-semibold">Upload from laptop or paste URL</span>
+                </div>
+
+                {/* Laptop File Picker */}
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    onChange={handleLaptopPosterUpload}
+                    accept="image/*"
+                    className="hidden"
+                  />
+
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingPoster}
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold shadow-sm transition-colors flex items-center justify-center gap-2 flex-shrink-0 disabled:opacity-50"
+                  >
+                    {uploadingPoster ? (
+                      <>
+                        <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <span>Uploading from Laptop...</span>
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                        </svg>
+                        <span>Choose Photo from Laptop</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex-1 w-full">
+                    <input
+                      type="text"
+                      required
+                      value={formData.posterUrl}
+                      onChange={(e) => setFormData({ ...formData, posterUrl: e.target.value })}
+                      placeholder="Or paste photo URL here..."
+                      className="w-full px-3 py-2 bg-white border border-gray-300 rounded-xl text-xs focus:outline-none focus:border-indigo-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Live Poster Preview */}
                 {formData.posterUrl && (
-                  <div className="mt-2 flex items-center gap-3">
+                  <div className="pt-2 flex items-center gap-4 bg-white p-3 rounded-xl border border-gray-200">
                     <img
                       src={formData.posterUrl}
-                      alt="Preview"
-                      className="h-16 w-24 object-cover rounded-lg border border-gray-200"
+                      alt="Poster Preview"
+                      className="h-20 w-32 object-cover rounded-lg border border-gray-200 shadow-xs flex-shrink-0"
                     />
-                    <span className="text-xs text-gray-500">Live Poster Preview</span>
+                    <div className="space-y-1">
+                      <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded">
+                        ✓ Poster Ready
+                      </span>
+                      <p className="text-[11px] text-gray-500 line-clamp-1 max-w-sm">
+                        {formData.posterUrl}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
