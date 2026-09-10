@@ -49,14 +49,31 @@ export interface CompanyRequest {
   createdAt: string;
 }
 
+export interface UpcomingEvent {
+  id: number;
+  title: string;
+  category: string;
+  date: string;
+  city: string;
+  posterUrl: string;
+  stipend: string;
+  rolesNeeded: string[];
+  vacancies: number;
+  appliedCount: number;
+  organizer: string;
+  description: string;
+}
+
 interface Database {
   volunteers: Volunteer[];
   experiences: Experience[];
   companyRequests: CompanyRequest[];
+  upcomingEvents?: UpcomingEvent[];
   nextIds: {
     volunteers: number;
     experiences: number;
     companyRequests: number;
+    upcomingEvents?: number;
   };
 }
 
@@ -65,10 +82,12 @@ function getDefaultDb(): Database {
     volunteers: [],
     experiences: [],
     companyRequests: [],
+    upcomingEvents: [],
     nextIds: {
       volunteers: 1,
       experiences: 1,
       companyRequests: 1,
+      upcomingEvents: 1,
     },
   };
 }
@@ -290,3 +309,16 @@ export function getStats() {
     completedRequests: db.companyRequests.filter((r) => r.status === "completed").length,
   };
 }
+
+// ============== UPCOMING EVENTS ==============
+
+export function getAllUpcomingEvents(): UpcomingEvent[] {
+  const db = readDb();
+  return db.upcomingEvents || [];
+}
+
+export function getUpcomingEventById(id: number): UpcomingEvent | undefined {
+  const db = readDb();
+  return (db.upcomingEvents || []).find((e) => e.id === id);
+}
+

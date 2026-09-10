@@ -20,6 +20,13 @@ export default function Navbar() {
           {/* Nav Links */}
           <div className="hidden md:flex md:items-center md:space-x-1 bg-slate-100/90 border border-slate-200/80 rounded-full px-4 py-1.5 shadow-inner">
             <Link 
+              href="/#upcoming-events" 
+              className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs flex items-center gap-1.5"
+            >
+              <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+              <span>Upcoming Gigs</span>
+            </Link>
+            <Link 
               href="/volunteers" 
               className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
             >
@@ -76,6 +83,14 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-3 shadow-xl">
+          <Link 
+            href="/#upcoming-events" 
+            onClick={() => setIsOpen(false)}
+            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50 flex items-center gap-2"
+          >
+            <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+            <span>Upcoming Gigs & Festivals</span>
+          </Link>
           <Link 
             href="/volunteers" 
             onClick={() => setIsOpen(false)}

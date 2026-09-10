@@ -469,9 +469,68 @@
       "createdAt": "2024-06-18T10:00:00.000Z"
     }
   ],
+  "upcomingEvents": [
+    {
+      "id": 1,
+      "title": "Sunburn Arena Live 2024",
+      "category": "Concert & Music Fest",
+      "date": "Nov 15 - 17, 2024",
+      "city": "Mumbai, Jio World Garden",
+      "posterUrl": "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
+      "stipend": "₹2,500 / Day + Meals & Pass",
+      "rolesNeeded": ["Stage Setup", "Crowd Flow", "VIP Lounge", "Artist Escort"],
+      "vacancies": 35,
+      "appliedCount": 118,
+      "organizer": "Percept Live Events",
+      "description": "Asia's biggest electronic music festival needs energetic ground crew for 3 days of stage lighting, crowd safety, and backstage artist escort."
+    },
+    {
+      "id": 2,
+      "title": "India Tech Leaders Summit 2024",
+      "category": "Tech Conference",
+      "date": "Nov 22 - 23, 2024",
+      "city": "Bengaluru, Palace Grounds",
+      "posterUrl": "https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80",
+      "stipend": "₹3,000 / Day + Certificate",
+      "rolesNeeded": ["Badge Registration", "Tech Stage Assist", "Speaker Protocol"],
+      "vacancies": 20,
+      "appliedCount": 84,
+      "organizer": "TechSparks Asia",
+      "description": "Premier national conference hosting 3,000+ founders and CXOs. Volunteers receive direct networking access, meals, and official experience letter."
+    },
+    {
+      "id": 3,
+      "title": "Delhi Food & Culture Carnival",
+      "category": "Food & Cultural Fest",
+      "date": "Dec 06 - 08, 2024",
+      "city": "New Delhi, JLN Stadium",
+      "posterUrl": "https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80",
+      "stipend": "₹2,200 / Day + Unlimited Food Vouchers",
+      "rolesNeeded": ["Tasting Zone Coord", "Token Counters", "Guest Hospitality"],
+      "vacancies": 40,
+      "appliedCount": 162,
+      "organizer": "Delhi Street Fest Co.",
+      "description": "3-day winter food carnival featuring 100+ celebrity chefs and live musical bands. Fun, fast-paced work with certificates and festival merchandise."
+    },
+    {
+      "id": 4,
+      "title": "Pro Cricket Fan Village Expo",
+      "category": "Sports League",
+      "date": "Dec 14 - 15, 2024",
+      "city": "Jaipur, SMS Stadium Grounds",
+      "posterUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
+      "stipend": "₹2,800 / Day + Match Tickets",
+      "rolesNeeded": ["Fan Arena Security", "Merch Sales", "Queue Management"],
+      "vacancies": 25,
+      "appliedCount": 95,
+      "organizer": "Apex Sports Management",
+      "description": "Massive interactive fan engagement arena with live simulators, player appearances, and music performances."
+    }
+  ],
   "nextIds": {
     "volunteers": 13,
     "experiences": 24,
-    "companyRequests": 5
+    "companyRequests": 5,
+    "upcomingEvents": 5
   }
 }

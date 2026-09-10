@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
@@ -80,6 +80,15 @@ export default function JoinVolunteerPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [createdVolunteer, setCreatedVolunteer] = useState<any | null>(null);
+  const [targetEvent, setTargetEvent] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const evt = params.get('event');
+      if (evt) setTargetEvent(evt);
+    }
+  }, []);
 
   const addExperience = () => {
     setExperiences([
@@ -290,6 +299,24 @@ export default function JoinVolunteerPage() {
             Create your verified profile, showcase your past event photos, and get discovered by top event companies nationwide.
           </p>
         </div>
+
+        {targetEvent && (
+          <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200/80 text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm">
+            <div>
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-indigo-600 block">
+                Applying For Official Event Gig
+              </span>
+              <span className="text-lg font-black text-slate-900">{targetEvent}</span>
+              <p className="text-xs text-slate-600 mt-0.5">
+                Your profile will be directly prioritized and submitted to the event producers.
+              </p>
+            </div>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-white rounded-full text-xs font-bold text-indigo-700 border border-indigo-200 shadow-xs flex-shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              Fast-Track Review
+            </span>
+          </div>
+        )}
 
         {error && (
           <div className="mb-8 p-4 bg-red-50 border border-red-200 text-red-700 rounded-2xl flex items-center gap-3">
