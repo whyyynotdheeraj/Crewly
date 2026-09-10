@@ -322,3 +322,41 @@ export function getUpcomingEventById(id: number): UpcomingEvent | undefined {
   return (db.upcomingEvents || []).find((e) => e.id === id);
 }
 
+export function createUpcomingEvent(data: Omit<UpcomingEvent, "id">): UpcomingEvent {
+  const db = readDb();
+  if (!db.upcomingEvents) db.upcomingEvents = [];
+  if (!db.nextIds.upcomingEvents) db.nextIds.upcomingEvents = 1;
+
+  const newEvent: UpcomingEvent = {
+    ...data,
+    id: db.nextIds.upcomingEvents++,
+  };
+  db.upcomingEvents.push(newEvent);
+  writeDb(db);
+  return newEvent;
+}
+
+export function updateUpcomingEvent(id: number, data: Partial<Omit<UpcomingEvent, "id">>): UpcomingEvent | null {
+  const db = readDb();
+  if (!db.upcomingEvents) return null;
+  const index = db.upcomingEvents.findIndex((e) => e.id === id);
+  if (index === -1) return null;
+
+  db.upcomingEvents[index] = {
+    ...db.upcomingEvents[index],
+    ...data,
+  };
+  writeDb(db);
+  return db.upcomingEvents[index];
+}
+
+export function deleteUpcomingEvent(id: number): boolean {
+  const db = readDb();
+  if (!db.upcomingEvents) return false;
+  const initialLength = db.upcomingEvents.length;
+  db.upcomingEvents = db.upcomingEvents.filter((e) => e.id !== id);
+  writeDb(db);
+  return db.upcomingEvents.length < initialLength;
+}
+
+

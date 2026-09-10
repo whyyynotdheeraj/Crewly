@@ -11,6 +11,7 @@ export default function AdminSidebar() {
 
   const navLinks = [
     { name: 'Dashboard', href: '/admin' },
+    { name: 'Events & Gigs', href: '/admin/events' },
     { name: 'Volunteers', href: '/admin/volunteers' },
     { name: 'Requests', href: '/admin/requests' },
   ];
