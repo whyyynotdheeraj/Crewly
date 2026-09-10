@@ -7,79 +7,96 @@ interface LogoProps {
 }
 
 export default function Logo({ variant = 'dark', size = 'md' }: LogoProps) {
-  const isDarkBg = variant === 'light'; // when placed on dark backgrounds
+  const isLight = variant === 'light'; // on dark backgrounds
 
-  const iconSizes = {
-    sm: 'w-8 h-8',
-    md: 'w-10 h-10',
-    lg: 'w-12 h-12',
+  // Scaled dimensions
+  const dimensions = {
+    sm: { width: 140, height: 38 },
+    md: { width: 170, height: 46 },
+    lg: { width: 210, height: 56 },
   };
 
-  const textSizes = {
-    sm: 'text-xl',
-    md: 'text-2xl',
-    lg: 'text-3xl',
-  };
+  const dim = dimensions[size];
 
   return (
-    <Link href="/" className="group inline-flex items-center gap-3 select-none">
-      {/* Premium Geometric 3D SVG Monogram */}
-      <div className={`relative ${iconSizes[size]} transition-transform duration-300 group-hover:scale-105`}>
-        <svg
-          viewBox="0 0 48 48"
-          fill="none"
-          xmlns="http://www.w3.org/2000/svg"
-          className="w-full h-full drop-shadow-md"
+    <Link href="/" className="group inline-flex items-center select-none" aria-label="Crewly Home">
+      {/* 
+        Amazon-Style Typographic Vector Logo:
+        Clean custom wordmark with an iconic upward curved "stage swoop" arrow 
+        connecting the 'C' across to the 'y' (symbolizing "Crew to You" with an energetic smile).
+      */}
+      <svg
+        width={dim.width}
+        height={dim.height}
+        viewBox="0 0 180 50"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="transition-transform duration-300 group-hover:scale-105 overflow-visible"
+      >
+        <defs>
+          {/* Vibrant Gradient for the Swoop Smile Arrow */}
+          <linearGradient id="crewlySwoopGrad" x1="18" y1="36" x2="162" y2="44" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stopColor="#4F46E5" />
+            <stop offset="45%" stopColor="#7C3AED" />
+            <stop offset="85%" stopColor="#EC4899" />
+            <stop offset="100%" stopColor="#F43F5E" />
+          </linearGradient>
+
+          {/* Glow filter for hover / accent */}
+          <filter id="swoopGlow" x="-10%" y="-10%" width="120%" height="140%">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#EC4899" floodOpacity="0.4" />
+          </filter>
+        </defs>
+
+        {/* Wordmark Text */}
+        <text
+          x="4"
+          y="31"
+          fontFamily="'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+          fontWeight="900"
+          fontSize="34"
+          letterSpacing="-0.04em"
+          fill={isLight ? '#FFFFFF' : '#0F172A'}
         >
-          <defs>
-            <linearGradient id="crewlyGrad1" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#4F46E5" />
-              <stop offset="50%" stopColor="#7C3AED" />
-              <stop offset="100%" stopColor="#EC4899" />
-            </linearGradient>
-            <linearGradient id="crewlyGrad2" x1="40" y1="8" x2="8" y2="40" gradientUnits="userSpaceOnUse">
-              <stop offset="0%" stopColor="#06B6D4" />
-              <stop offset="100%" stopColor="#6366F1" />
-            </linearGradient>
-            <filter id="logoGlow" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="4" stdDeviation="6" floodColor="#6366F1" floodOpacity="0.35" />
-            </filter>
-          </defs>
+          crewl<tspan fill={isLight ? '#E0E7FF' : '#4F46E5'}>y</tspan>
+        </text>
 
-          {/* Background Rounded Shield / Tile */}
-          <rect x="2" y="2" width="44" height="44" rx="14" fill="url(#crewlyGrad1)" />
-          
-          {/* Subtle Inner Glass Bevel */}
-          <rect x="3" y="3" width="42" height="42" rx="13" stroke="white" strokeOpacity="0.25" strokeWidth="1.5" />
+        {/* Live Stage Node over the 'l' & 'w' */}
+        <circle cx="102" cy="11" r="3" fill="#EC4899" />
 
-          {/* Modern Stylized Dynamic 'C' + Network Interlock */}
-          <path
-            d="M29 16C26.5 14 23 14 20 15.5C16.5 17.3 14 21 14 24.5C14 28 16.5 31.7 20 33.5C23.5 35.3 27.5 34.8 30 32.5"
-            stroke="white"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
+        {/* 
+          The Amazon-Style Swoop:
+          Curves gracefully under the wordmark from beneath the 'C' to the bottom curve of 'y',
+          ending with an arrow head that curves upward into a smile.
+        */}
+        <path
+          d="M16 38.5 C 50 49, 115 48, 154 36.5"
+          stroke="url(#crewlySwoopGrad)"
+          strokeWidth="3.8"
+          strokeLinecap="round"
+          filter="url(#swoopGlow)"
+        />
 
-          {/* Dynamic Connected Node / Crew Beacon */}
-          <circle cx="31" cy="16" r="3.5" fill="#38BDF8" />
-          <circle cx="31" cy="32" r="3.5" fill="#F43F5E" />
-          <circle cx="21" cy="24" r="2.5" fill="white" />
-        </svg>
-      </div>
+        {/* Dynamic Arrowhead pointing up at the tail of 'y' */}
+        <path
+          d="M147 38.5 L 157 35.8 L 155 45 Z"
+          fill="#F43F5E"
+          strokeLinejoin="round"
+        />
 
-      {/* Brand Typography */}
-      <div className="flex flex-col">
-        <div className="flex items-center gap-1">
-          <span className={`font-black tracking-tight ${textSizes[size]} ${isDarkBg ? 'text-white' : 'text-slate-900'}`}>
-            Crewly
-          </span>
-          <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
-        </div>
-        <span className="text-[9px] font-extrabold uppercase tracking-[0.2em] text-indigo-600 -mt-1">
-          Event Talent
-        </span>
-      </div>
+        {/* Tagline pill text */}
+        <text
+          x="108"
+          y="8"
+          fontFamily="'Inter', sans-serif"
+          fontWeight="800"
+          fontSize="7"
+          letterSpacing="0.18em"
+          fill={isLight ? '#38BDF8' : '#6366F1'}
+        >
+          EVENT CREW
+        </text>
+      </svg>
     </Link>
   );
 }
