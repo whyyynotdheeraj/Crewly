@@ -1,4 +1,6 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { getInitials, generateAvatarColor } from '@/lib/utils';
 import VerifiedBadge from './VerifiedBadge';
@@ -15,6 +17,7 @@ interface Volunteer {
 }
 
 export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
+  const [imgError, setImgError] = useState(false);
   const visibleSkills = volunteer.skills.slice(0, 3);
   const remainingSkills = volunteer.skills.length - 3;
 
@@ -23,10 +26,11 @@ export default function VolunteerCard({ volunteer }: { volunteer: Volunteer }) {
       
       {/* Visual Header / Avatar Photo */}
       <div className="h-48 w-full bg-slate-100 relative overflow-hidden">
-        {volunteer.profileImage ? (
+        {volunteer.profileImage && !imgError ? (
           <img 
             src={volunteer.profileImage} 
             alt={volunteer.name} 
+            onError={() => setImgError(true)}
             className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           />
         ) : (

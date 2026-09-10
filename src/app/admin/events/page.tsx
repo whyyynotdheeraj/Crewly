@@ -66,6 +66,37 @@ export default function AdminEventsPage() {
     }
   };
 
+function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('Image decode failed'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
   const handleLaptopPosterUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
@@ -78,28 +109,25 @@ export default function AdminEventsPage() {
     setUploadingPoster(true);
     setError('');
 
-    const uploadFormData = new FormData();
-    uploadFormData.append('file', file);
-    uploadFormData.append('type', 'experience');
-
     try {
-      const res = await fetch('/api/upload', {
-        method: 'POST',
-        body: uploadFormData,
-      });
+      // 1. Client-side compress to high quality base64 Data URL
+      // This guarantees the photo is permanently stored and never goes 404 or black!
+      const dataUrl = await compressImageToBase64(file, 1200, 0.82);
+      setFormData((prev) => ({ ...prev, posterUrl: dataUrl }));
+      setSuccess('Poster photo uploaded & compressed from laptop successfully!');
 
-      if (!res.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await res.json();
-      if (data.url) {
-        setFormData((prev) => ({ ...prev, posterUrl: data.url }));
-        setSuccess('Poster photo uploaded from laptop successfully!');
+      // 2. Also save to server filesystem as backup
+      try {
+        const uploadFormData = new FormData();
+        uploadFormData.append('file', file);
+        uploadFormData.append('type', 'experience');
+        await fetch('/api/upload', { method: 'POST', body: uploadFormData });
+      } catch {
+        // Safe to ignore, dataUrl is already set and safe
       }
     } catch (err) {
       console.error(err);
-      setError('Failed to upload image from laptop. Please try again.');
+      setError('Failed to process image. Please try again or paste an image URL.');
     } finally {
       setUploadingPoster(false);
     }
@@ -279,6 +307,9 @@ export default function AdminEventsPage() {
                         <img
                           src={evt.posterUrl}
                           alt={evt.title}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=300&q=80';
+                          }}
                           className="w-14 h-14 rounded-xl object-cover flex-shrink-0 border border-gray-200"
                         />
                         <div>
@@ -474,6 +505,9 @@ export default function AdminEventsPage() {
                     <img
                       src={formData.posterUrl}
                       alt="Poster Preview"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=600&q=80';
+                      }}
                       className="h-20 w-32 object-cover rounded-lg border border-gray-200 shadow-xs flex-shrink-0"
                     />
                     <div className="space-y-1">

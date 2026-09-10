@@ -1,19 +1,42 @@
-import React from 'react';
+'use client';
+
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { UpcomingEvent } from '@/db';
 
+const CATEGORY_FALLBACKS: Record<string, string> = {
+  'Comedy & Music Fest': 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80',
+  'Live Concert & Fusion Fest': 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80',
+  'Cultural & Arts Summit': 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1200&q=80',
+  'Trade Fair & Expo': 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
+  'Live Comedy Showcase': 'https://images.unsplash.com/photo-1585699324551-f6c309eedeca?auto=format&fit=crop&w=1200&q=80',
+};
+
+const DEFAULT_POSTER = 'https://images.unsplash.com/photo-1492684223066-81342ee5ff30?auto=format&fit=crop&w=1200&q=80';
+
 export default function UpcomingEventCard({ event }: { event: UpcomingEvent }) {
+  const [imgSrc, setImgSrc] = useState(event.posterUrl || CATEGORY_FALLBACKS[event.category] || DEFAULT_POSTER);
+  const [hasError, setHasError] = useState(false);
+
+  const handleError = () => {
+    if (!hasError) {
+      setHasError(true);
+      setImgSrc(CATEGORY_FALLBACKS[event.category] || DEFAULT_POSTER);
+    }
+  };
+
   return (
     <div className="bg-white rounded-[2rem] overflow-hidden flex flex-col h-full border border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.06)] hover:shadow-[0_20px_35px_-10px_rgba(99,102,241,0.18)] hover:-translate-y-2 transition-all duration-300 group">
       
       {/* Event Poster Image Banner */}
-      <div className="relative h-60 w-full overflow-hidden bg-slate-900">
+      <div className="relative h-60 w-full overflow-hidden bg-gradient-to-br from-indigo-900 via-slate-800 to-purple-900">
         <img
-          src={event.posterUrl}
+          src={imgSrc}
           alt={event.title}
+          onError={handleError}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/85 via-slate-950/25 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
 
         {/* BookMyShow Live Tag */}
         <div className="absolute top-3.5 left-3.5">
