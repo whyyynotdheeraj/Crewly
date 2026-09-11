@@ -44,15 +44,19 @@ export default function AdminDashboardPage() {
           const requestsData = await requestsRes.json();
           const eventsData = eventsRes.ok ? await eventsRes.json() : [];
 
+          const volList = Array.isArray(volunteersData) ? volunteersData : (volunteersData.data || []);
+          const reqList = Array.isArray(requestsData) ? requestsData : (requestsData.data || []);
+          const evtList = Array.isArray(eventsData) ? eventsData : (eventsData.data || []);
+
           setStats({
-            totalEvents: Array.isArray(eventsData) ? eventsData.length : 0,
-            totalVolunteers: volunteersData.data?.length || 0,
-            verifiedVolunteers: volunteersData.data?.filter((v: any) => v.verified).length || 0,
-            pendingRequests: requestsData.data?.filter((r: any) => r.status === 'pending').length || 0,
-            completedRequests: requestsData.data?.filter((r: any) => r.status === 'completed').length || 0,
+            totalEvents: evtList.length,
+            totalVolunteers: volList.length,
+            verifiedVolunteers: volList.filter((v: any) => v.verified).length,
+            pendingRequests: reqList.filter((r: any) => r.status === 'pending').length,
+            completedRequests: reqList.filter((r: any) => r.status === 'completed').length,
           });
 
-          setRecentRequests(requestsData.data?.slice(0, 5) || []);
+          setRecentRequests(reqList.slice(0, 5));
         }
       } catch (error) {
         console.error('Error fetching dashboard data:', error);

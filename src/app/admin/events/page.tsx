@@ -10,7 +10,7 @@ interface UpcomingEvent {
   date: string;
   city: string;
   posterUrl: string;
-  stipend: string;
+  payout: string;
   rolesNeeded: string[];
   vacancies: number;
   appliedCount: number;
@@ -39,7 +39,7 @@ export default function AdminEventsPage() {
     date: '',
     city: '',
     posterUrl: '',
-    stipend: '',
+    payout: '',
     rolesNeeded: '',
     vacancies: 20,
     appliedCount: 0,
@@ -146,7 +146,7 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
       date: event.date,
       city: event.city,
       posterUrl: event.posterUrl,
-      stipend: event.stipend,
+      payout: event.payout,
       rolesNeeded: event.rolesNeeded.join(', '),
       vacancies: event.vacancies,
       appliedCount: event.appliedCount,
@@ -164,7 +164,7 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
       date: '',
       city: 'Jaipur, Birla Auditorium',
       posterUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80',
-      stipend: '₹2,500 / Day + Meals & Pass',
+      payout: '₹2,500 / Day + Meals & Pass',
       rolesNeeded: 'Auditorium Ushers, Backstage Escort, VIP Protocol',
       vacancies: 25,
       appliedCount: 0,
@@ -248,7 +248,7 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Upcoming Events & Gigs Management</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Edit posters, dates, venues, stipends, and crew vacancies shown on the homepage.
+            Edit posters, dates, venues, payouts, and crew vacancies shown on the homepage.
           </p>
         </div>
 
@@ -294,7 +294,7 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
                   <th className="px-6 py-4">Event Poster & Title</th>
                   <th className="px-6 py-4">Venue & City</th>
                   <th className="px-6 py-4">Date</th>
-                  <th className="px-6 py-4">Stipend</th>
+                  <th className="px-6 py-4">Payout</th>
                   <th className="px-6 py-4">Vacancies</th>
                   <th className="px-6 py-4 text-right">Actions</th>
                 </tr>
@@ -322,7 +322,7 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
                     <td className="px-6 py-4 font-medium text-gray-700 whitespace-nowrap">{evt.date}</td>
                     <td className="px-6 py-4">
                       <span className="inline-block px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 font-bold text-xs border border-emerald-200">
-                        {evt.stipend}
+                        {evt.payout}
                       </span>
                     </td>
                     <td className="px-6 py-4">
@@ -522,17 +522,17 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
                 )}
               </div>
 
-              {/* Stipend & Vacancies */}
+              {/* Payout & Vacancies */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-xs font-bold uppercase text-gray-700 mb-1">
-                    Stipend & Perks *
+                    Payout & Perks *
                   </label>
                   <input
                     type="text"
                     required
-                    value={formData.stipend}
-                    onChange={(e) => setFormData({ ...formData, stipend: e.target.value })}
+                    value={formData.payout}
+                    onChange={(e) => setFormData({ ...formData, payout: e.target.value })}
                     placeholder="e.g. ₹2,500 / Day + Artist Pass & Meals"
                     className="w-full px-4 py-2.5 border border-gray-300 rounded-xl text-sm focus:outline-none focus:border-indigo-600"
                   />

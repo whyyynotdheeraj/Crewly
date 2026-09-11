@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { searchVolunteers, createVolunteer, createExperience } from "@/db";
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
@@ -10,6 +13,7 @@ export async function GET(request: NextRequest) {
     const minExperienceStr = searchParams.get("minExperience") || searchParams.get("experience");
     const verifiedStr = searchParams.get("verified");
     const availability = searchParams.get("availability") || undefined;
+    const isAdmin = searchParams.get("admin") === "true";
 
     const minExperience = minExperienceStr
       ? parseInt(minExperienceStr, 10)
@@ -26,10 +30,14 @@ export async function GET(request: NextRequest) {
       availability,
     });
 
-    // Remove phone numbers from public response
-    const publicVolunteers = volunteers.map(({ phone, ...rest }) => rest);
+    // If admin is requesting, return full details (including phone, email)
+    const result = isAdmin ? volunteers : volunteers.map(({ phone, ...rest }) => rest);
 
-    return NextResponse.json(publicVolunteers);
+    return NextResponse.json(result, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
+      },
+    });
   } catch (error) {
     console.error("Error fetching volunteers:", error);
     return NextResponse.json(

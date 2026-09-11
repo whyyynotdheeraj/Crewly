@@ -54,7 +54,7 @@ export default function UpcomingEventsSection({ initialEvents }: { initialEvents
               Upcoming Jaipur Events Hiring Crew
             </h2>
             <p className="text-slate-600 text-sm sm:text-base mt-1.5 max-w-xl">
-              Real upcoming festivals, comedy specials, and summits at Birla Auditorium, JECC Sitapura, RIC, and Clarks Amer. Apply for volunteer passes & daily stipends.
+              Real upcoming festivals, comedy specials, and summits at Birla Auditorium, JECC Sitapura, RIC, and Clarks Amer. Apply for volunteer passes & daily payouts.
             </p>
           </div>
 

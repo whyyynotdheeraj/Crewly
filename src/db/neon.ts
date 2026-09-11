@@ -1,17 +1,17 @@
 import { neon } from '@neondatabase/serverless';
 import type { UpcomingEvent, Volunteer, Experience, CompanyRequest } from './index';
 
-const DATABASE_URL = process.env.DATABASE_URL;
-
 export function isNeonConfigured(): boolean {
-  return Boolean(DATABASE_URL && DATABASE_URL.startsWith('postgresql://'));
+  const url = process.env.DATABASE_URL;
+  return Boolean(url && url.startsWith('postgresql://'));
 }
 
 function getSql() {
-  if (!DATABASE_URL) {
+  const url = process.env.DATABASE_URL;
+  if (!url) {
     throw new Error('DATABASE_URL is not set');
   }
-  return neon(DATABASE_URL);
+  return neon(url);
 }
 
 // ----------------- MAPPERS -----------------
@@ -23,7 +23,7 @@ function mapEvent(row: any): UpcomingEvent {
     date: row.date,
     city: row.city,
     posterUrl: row.poster_url,
-    stipend: row.stipend,
+    payout: row.payout,
     rolesNeeded: Array.isArray(row.roles_needed) ? row.roles_needed : typeof row.roles_needed === 'string' ? JSON.parse(row.roles_needed) : [],
     vacancies: Number(row.vacancies || 20),
     appliedCount: Number(row.applied_count || 0),
@@ -102,14 +102,14 @@ export async function neonGetUpcomingEventById(id: number): Promise<UpcomingEven
 export async function neonCreateUpcomingEvent(data: Omit<UpcomingEvent, 'id'>): Promise<UpcomingEvent> {
   const sql = getSql();
   const rows = await sql`
-    INSERT INTO upcoming_events (title, category, date, city, poster_url, stipend, roles_needed, vacancies, applied_count, organizer, description)
+    INSERT INTO upcoming_events (title, category, date, city, poster_url, payout, roles_needed, vacancies, applied_count, organizer, description)
     VALUES (
       ${data.title},
       ${data.category},
       ${data.date},
       ${data.city},
       ${data.posterUrl},
-      ${data.stipend},
+      ${data.payout},
       ${JSON.stringify(data.rolesNeeded || [])},
       ${data.vacancies || 20},
       ${data.appliedCount || 0},
@@ -135,7 +135,7 @@ export async function neonUpdateUpcomingEvent(id: number, data: Partial<Omit<Upc
       date = ${merged.date},
       city = ${merged.city},
       poster_url = ${merged.posterUrl},
-      stipend = ${merged.stipend},
+      payout = ${merged.payout},
       roles_needed = ${JSON.stringify(merged.rolesNeeded || [])},
       vacancies = ${merged.vacancies || 20},
       applied_count = ${merged.appliedCount || 0},

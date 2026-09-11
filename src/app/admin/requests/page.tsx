@@ -31,7 +31,7 @@ export default function AdminRequestsPage() {
       const res = await fetch('/api/requests');
       if (res.ok) {
         const data = await res.json();
-        setRequests(data.data || []);
+        setRequests(Array.isArray(data) ? data : (data.data || []));
       }
     } catch (error) {
       console.error('Error fetching requests:', error);
