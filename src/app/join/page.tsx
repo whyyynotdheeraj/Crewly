@@ -625,7 +625,11 @@ export default function JoinVolunteerPage() {
 
             {devOtpHint && (
               <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm flex items-start gap-2.5">
-                <span className="text-lg">🔑</span>
+                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                  </svg>
+                </div>
                 <div>
                   <p className="font-bold">Test OTP (Dev Mode):</p>
                   <p className="font-mono text-base tracking-widest font-black text-amber-900 mt-0.5">{devOtpHint}</p>
@@ -794,7 +798,8 @@ export default function JoinVolunteerPage() {
                       {authUser.name || 'Verified Volunteer'}
                     </span>
                     <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[10px] font-black uppercase tracking-wider">
-                      ✓ Verified Email
+                      <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>
+                      Verified Email
                     </span>
                   </div>
                   <p className="text-xs text-slate-600">{authUser.email}</p>
@@ -896,7 +901,7 @@ export default function JoinVolunteerPage() {
                       </>
                     ) : (
                       <>
-                        <span>⚡ Apply for this Gig Now (1-Click)</span>
+                        <span>Apply for this Gig Now (1-Click)</span>
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                         </svg>
@@ -917,8 +922,10 @@ export default function JoinVolunteerPage() {
               ) : (
                 /* PROFILE READY DASHBOARD (NO TARGET EVENT) */
                 <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-indigo-100 max-w-xl mx-auto text-center mb-8 animate-in fade-in">
-                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
-                    ✓
+                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    </svg>
                   </div>
                   <h2 className="text-2xl font-black text-slate-900 tracking-tight">Your Volunteer Profile is Active!</h2>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">

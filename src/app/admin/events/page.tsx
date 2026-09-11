@@ -266,14 +266,14 @@ function compressImageToBase64(file: File, maxWidth = 1200, quality = 0.82): Pro
       {/* Status Notifications */}
       {success && (
         <div className="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
-          <span>✓ {success}</span>
+          <span className="flex items-center"><svg className="w-4 h-4 text-emerald-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>{success}</span>
           <button onClick={() => setSuccess('')} className="text-emerald-600 font-bold">✕</button>
         </div>
       )}
 
       {error && (
         <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
-          <span>⚠️ {error}</span>
+          <span className="flex items-center"><svg className="w-4 h-4 text-red-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 9v2m0 4h.01M12 6a9 9 0 110 18 9 9 0 010-18z"/></svg>{error}</span>
           <button onClick={() => setError('')} className="text-red-600 font-bold">✕</button>
         </div>
       )}

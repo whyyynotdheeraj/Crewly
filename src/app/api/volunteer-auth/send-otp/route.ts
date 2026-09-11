@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
       await resend.emails.send({
         from: FROM_EMAIL,
         to: normalizedEmail,
-        subject: '🎉 Your Crewly Login Code',
+        subject: 'Your Crewly Login Code',
         html: `
           <!DOCTYPE html>
           <html>
@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
                 <p style="color: #6b7280; font-size: 13px; margin: 0;">If you didn't request this, ignore this email.</p>
               </div>
               <div style="background: #f9fafb; padding: 20px 32px; text-align: center; border-top: 1px solid #e5e7eb;">
-                <p style="color: #9ca3af; font-size: 12px; margin: 0;">© 2024 Crewly. Made with ❤️ for volunteers.</p>
+                <p style="color: #9ca3af; font-size: 12px; margin: 0;">© 2024 Crewly. Made with care for volunteers.</p>
               </div>
             </div>
           </body>

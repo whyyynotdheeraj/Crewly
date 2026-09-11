@@ -166,7 +166,7 @@ export default function VolunteersPage() {
 
                 <div className="flex justify-between items-center text-[11px] font-semibold text-slate-400">
                   <span>{progressPercent}% towards launch</span>
-                  <span className="text-emerald-600 font-bold">✓ Early Batch Verified Badges Included</span>
+                  <span className="flex items-center"><svg className="w-4 h-4 text-emerald-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>Early Batch Verified Badges Included</span>
                 </div>
               </div>
 

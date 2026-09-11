@@ -249,8 +249,10 @@ export default function VolunteerProfilePage() {
             {isOwnProfile && (
               <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
-                    👤
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                    <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
@@ -260,13 +262,24 @@ export default function VolunteerProfilePage() {
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      This is how event organizers see your profile. (Public directory is hidden until 100 volunteers milestone).
+                      This is how event organizers see your profile.
                     </p>
                   </div>
                 </div>
-                <span className="text-xs font-bold px-3 py-1 bg-white text-indigo-700 rounded-full border border-indigo-200 shadow-xs flex-shrink-0">
-                  Private to You
-                </span>
+                <div className="flex items-center gap-2 self-end sm:self-center">
+                  <Link
+                    href="/join"
+                    className="text-xs font-bold px-3 py-1.5 bg-white text-indigo-700 hover:text-indigo-900 rounded-xl border border-indigo-200 shadow-xs flex items-center gap-1.5 transition-all"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Edit Profile</span>
+                  </Link>
+                  <span className="text-xs font-bold px-3 py-1.5 bg-indigo-100/70 text-indigo-700 rounded-xl border border-indigo-200/80 shadow-xs">
+                    Private to You
+                  </span>
+                </div>
               </div>
             )}
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">

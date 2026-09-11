@@ -139,7 +139,7 @@ export default function CompaniesPage() {
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-xs text-slate-900">Aarav K.</span>
-                            <span className="text-[10px] text-emerald-600 font-bold">✓ Verified</span>
+                            <span className="flex items-center"><svg className="w-4 h-4 text-emerald-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>Verified</span>
                           </div>
                           <span className="text-[11px] text-slate-500">Stage Operations Lead</span>
                         </div>
@@ -158,7 +158,7 @@ export default function CompaniesPage() {
                         <div>
                           <div className="flex items-center gap-1.5">
                             <span className="font-bold text-xs text-slate-900">Pooja M.</span>
-                            <span className="text-[10px] text-emerald-600 font-bold">✓ Verified</span>
+                            <span className="flex items-center"><svg className="w-4 h-4 text-emerald-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg>Verified</span>
                           </div>
                           <span className="text-[11px] text-slate-500">VIP Protocol Officer</span>
                         </div>

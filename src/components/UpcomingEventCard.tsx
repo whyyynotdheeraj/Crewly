@@ -128,8 +128,11 @@ export default function UpcomingEventCard({ event }: { event: UpcomingEvent }) {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
             </svg>
           </Link>
-          <span className="text-[10px] text-slate-400 text-center block mt-2 font-medium">
-            ⚡ {event.appliedCount} Jaipur volunteers applied
+          <span className="text-[10px] text-slate-400 text-center flex items-center justify-center gap-1 mt-2 font-medium">
+            <svg className="w-3 h-3 text-amber-500 fill-current" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" clipRule="evenodd" />
+            </svg>
+            <span>{event.appliedCount} Jaipur volunteers applied</span>
           </span>
         </div>
       </div>
