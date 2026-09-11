@@ -82,6 +82,116 @@ export default function JoinVolunteerPage() {
   const [createdVolunteer, setCreatedVolunteer] = useState<any | null>(null);
   const [targetEvent, setTargetEvent] = useState<string | null>(null);
 
+  // Volunteer Auth State
+  const [authUser, setAuthUser] = useState<{ email: string; name?: string; picture?: string; volunteerId?: string } | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  // Inline OTP state
+  const [authEmail, setAuthEmail] = useState('');
+  const [authOtp, setAuthOtp] = useState('');
+  const [otpStep, setOtpStep] = useState<'email' | 'otp'>('email');
+  const [otpSending, setOtpSending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const [otpError, setOtpError] = useState<string | null>(null);
+  const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  const checkSession = async () => {
+    try {
+      setAuthLoading(true);
+      const res = await fetch('/api/volunteer-auth/session');
+      const data = await res.json();
+      if (data.authenticated && data.user) {
+        setAuthUser(data.user);
+        setEmail(data.user.email);
+        if (data.user.name) setName((prev) => prev || data.user.name);
+        if (data.user.picture) setProfileImage((prev) => prev || data.user.picture);
+      } else {
+        setAuthUser(null);
+      }
+    } catch (e) {
+      console.error('Session check failed', e);
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  useEffect(() => {
+    let timer: any;
+    if (resendCooldown > 0) {
+      timer = setInterval(() => setResendCooldown((prev) => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [resendCooldown]);
+
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setOtpError(null);
+    setDevOtpHint(null);
+    const cleanEmail = authEmail.trim().toLowerCase();
+    if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+      setOtpError('Please enter a valid email address.');
+      return;
+    }
+    setOtpSending(true);
+    try {
+      const res = await fetch('/api/volunteer-auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: cleanEmail }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to send login code.');
+      setOtpStep('otp');
+      setResendCooldown(45);
+      if (data.devOtp) setDevOtpHint(data.devOtp);
+    } catch (err: any) {
+      setOtpError(err.message || 'Error sending login code.');
+    } finally {
+      setOtpSending(false);
+    }
+  };
+
+  const handleVerifyOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setOtpError(null);
+    const cleanOtp = authOtp.trim().replace(/\D/g, '');
+    if (cleanOtp.length !== 6) {
+      setOtpError('Please enter the 6-digit code.');
+      return;
+    }
+    setOtpVerifying(true);
+    try {
+      const res = await fetch('/api/volunteer-auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: authEmail.trim().toLowerCase(), otp: cleanOtp }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Invalid or expired OTP.');
+      await checkSession();
+    } catch (err: any) {
+      setOtpError(err.message || 'Verification failed.');
+    } finally {
+      setOtpVerifying(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    await fetch('/api/volunteer-auth/session', { method: 'DELETE' });
+    setAuthUser(null);
+    setOtpStep('email');
+    setAuthOtp('');
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `/api/volunteer-auth/google?callbackUrl=${encodeURIComponent('/join')}`;
+  };
+
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
@@ -327,13 +437,239 @@ export default function JoinVolunteerPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* 1. PERSONAL INFORMATION */}
-          <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
-            <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
-              Personal Information
-            </h2>
+        {/* AUTH CHECKING SKELETON */}
+        {authLoading ? (
+          <div className="bg-white p-8 rounded-3xl shadow-sm border border-slate-100 text-center py-12">
+            <div className="w-8 h-8 border-3 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+            <p className="text-sm font-medium text-slate-500">Checking volunteer authentication...</p>
+          </div>
+        ) : !authUser ? (
+          /* STEP 1: AUTHENTICATION GATE */
+          <div className="bg-white/95 backdrop-blur-xl p-8 md:p-10 rounded-3xl shadow-xl border border-indigo-100 mb-12 max-w-xl mx-auto text-left">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-50 border border-indigo-200 text-indigo-700 rounded-full text-xs font-black uppercase tracking-wider mb-3">
+                <span className="w-2 h-2 rounded-full bg-indigo-600 animate-ping"></span>
+                Step 1 of 2: Volunteer Verification
+              </div>
+              <h2 className="text-2xl font-black text-slate-900 tracking-tight">Login to Continue Registration</h2>
+              <p className="text-sm text-slate-500 mt-1.5">
+                Sign in with Google or your Email OTP to protect your profile & link your gigs.
+              </p>
+            </div>
+
+            {otpError && (
+              <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 text-sm flex items-start gap-2.5">
+                <svg className="w-5 h-5 flex-shrink-0 mt-0.5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span>{otpError}</span>
+              </div>
+            )}
+
+            {devOtpHint && (
+              <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm flex items-start gap-2.5">
+                <span className="text-lg">🔑</span>
+                <div>
+                  <p className="font-bold">Test OTP (Dev Mode):</p>
+                  <p className="font-mono text-base tracking-widest font-black text-amber-900 mt-0.5">{devOtpHint}</p>
+                  <p className="text-xs text-amber-700 mt-0.5">Use this code below to verify immediately.</p>
+                </div>
+              </div>
+            )}
+
+            {/* Google Login Button */}
+            <button
+              type="button"
+              onClick={handleGoogleLogin}
+              className="w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-700 font-bold text-sm transition-all shadow-xs active:scale-[0.99]"
+            >
+              <svg className="w-5 h-5" viewBox="0 0 24 24">
+                <path
+                  fill="#4285F4"
+                  d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                />
+                <path
+                  fill="#34A853"
+                  d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                />
+                <path
+                  fill="#FBBC05"
+                  d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                />
+                <path
+                  fill="#EA4335"
+                  d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                />
+              </svg>
+              <span>Continue with Google</span>
+            </button>
+
+            {/* Divider */}
+            <div className="relative my-6 text-center">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-200"></div>
+              </div>
+              <span className="relative bg-white px-3 text-xs font-bold uppercase tracking-wider text-slate-400">
+                OR WITH EMAIL OTP
+              </span>
+            </div>
+
+            {/* OTP Step 1: Email */}
+            {otpStep === 'email' ? (
+              <form onSubmit={handleSendOtp} className="space-y-4">
+                <div>
+                  <label htmlFor="authEmail" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                    Enter Your Email
+                  </label>
+                  <input
+                    id="authEmail"
+                    type="email"
+                    required
+                    placeholder="volunteer@example.com"
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl text-slate-900 placeholder:text-slate-400 text-sm focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-600 transition-all font-medium"
+                  />
+                </div>
+                <button
+                  type="submit"
+                  disabled={otpSending}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/25 hover:from-indigo-500 hover:to-purple-500 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {otpSending ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                      <span>Sending code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Send 6-Digit OTP Code</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </>
+                  )}
+                </button>
+              </form>
+            ) : (
+              /* OTP Step 2: Code Verification */
+              <form onSubmit={handleVerifyOtp} className="space-y-4">
+                <div className="bg-slate-50 rounded-2xl p-3.5 border border-slate-200 flex items-center justify-between">
+                  <div className="text-xs">
+                    <span className="text-slate-400 block font-medium">Code sent to:</span>
+                    <span className="font-bold text-slate-800 break-all">{authEmail}</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => { setOtpStep('email'); setAuthOtp(''); setOtpError(null); }}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-white px-2.5 py-1.5 rounded-lg border border-slate-200 shadow-xs"
+                  >
+                    Change
+                  </button>
+                </div>
+
+                <div>
+                  <label htmlFor="authOtp" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2 text-center">
+                    Enter 6-Digit OTP Code
+                  </label>
+                  <input
+                    id="authOtp"
+                    type="text"
+                    maxLength={6}
+                    autoFocus
+                    placeholder="123456"
+                    value={authOtp}
+                    onChange={(e) => setAuthOtp(e.target.value.replace(/\D/g, ''))}
+                    className="w-full text-center tracking-[1em] text-2xl font-black py-3 bg-slate-50 border-2 border-indigo-200 focus:border-indigo-600 focus:bg-white rounded-2xl text-slate-900 focus:outline-none transition-all"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={otpVerifying || authOtp.length !== 6}
+                  className="w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold text-sm shadow-md hover:shadow-indigo-500/25 hover:from-indigo-500 hover:to-purple-500 transition-all active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {otpVerifying ? (
+                    <>
+                      <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                      <span>Verifying & Unlocking...</span>
+                    </>
+                  ) : (
+                    <span>Verify & Continue Registration →</span>
+                  )}
+                </button>
+
+                <div className="text-center pt-2">
+                  {resendCooldown > 0 ? (
+                    <p className="text-xs text-slate-400 font-medium">
+                      Resend code in <span className="font-bold text-slate-600">{resendCooldown}s</span>
+                    </p>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleSendOtp()}
+                      disabled={otpSending}
+                      className="text-xs font-bold text-indigo-600 hover:text-indigo-700 underline"
+                    >
+                      Didn't receive code? Resend OTP
+                    </button>
+                  )}
+                </div>
+              </form>
+            )}
+          </div>
+        ) : (
+          /* STEP 2: LOGGED IN USER STATUS & FULL REGISTRATION FORM */
+          <>
+            {/* Authenticated user status bar */}
+            <div className="mb-8 p-4 rounded-2xl bg-emerald-50 border border-emerald-200/80 text-emerald-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+              <div className="flex items-center gap-3">
+                {authUser.picture ? (
+                  <img src={authUser.picture} alt="Profile" className="w-10 h-10 rounded-full border border-emerald-300 object-cover" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-emerald-600 text-white font-black flex items-center justify-center text-sm shadow-xs">
+                    {(authUser.name || authUser.email)[0].toUpperCase()}
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm font-bold text-slate-900">
+                      {authUser.name || 'Verified Volunteer'}
+                    </span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-emerald-600 text-white rounded-md text-[10px] font-black uppercase tracking-wider">
+                      ✓ Verified Email
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-600">{authUser.email}</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 self-end sm:self-center">
+                {authUser.volunteerId && (
+                  <Link
+                    href={`/volunteers/${authUser.volunteerId}`}
+                    className="text-xs font-bold text-indigo-600 hover:text-indigo-800 bg-white px-3 py-1.5 rounded-xl border border-indigo-200 shadow-xs"
+                  >
+                    View My Profile →
+                  </Link>
+                )}
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="text-xs font-semibold text-slate-500 hover:text-red-600 px-2 py-1 transition-colors"
+                >
+                  Log out
+                </button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* 1. PERSONAL INFORMATION */}
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                  <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+                  Personal Information
+                </h2>
 
             {/* Profile Photo */}
             <div className="mb-6">
@@ -386,14 +722,26 @@ export default function JoinVolunteerPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Email Address <span className="text-red-500">*</span>
+                  </label>
+                  {authUser && (
+                    <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full border border-emerald-200">
+                      ✓ Verified Account
+                    </span>
+                  )}
+                </div>
                 <input
                   type="email"
                   required
+                  readOnly={Boolean(authUser)}
                   placeholder="e.g. rahul@example.com"
-                  className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none"
+                  className={`w-full px-4 py-2.5 border rounded-lg outline-none ${
+                    authUser
+                      ? 'bg-slate-50 border-slate-200 text-slate-700 font-medium cursor-not-allowed'
+                      : 'border-gray-300 focus:ring-2 focus:ring-blue-600 focus:border-transparent'
+                  }`}
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                 />
@@ -767,7 +1115,9 @@ export default function JoinVolunteerPage() {
             </p>
           </div>
         </form>
-      </main>
+      </>
+    )}
+  </main>
 
       <Footer />
     </div>

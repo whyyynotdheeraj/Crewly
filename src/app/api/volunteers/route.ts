@@ -91,6 +91,21 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Link with volunteer_auth_tokens if email is registered
+    if (data.email && process.env.DATABASE_URL) {
+      try {
+        const { neon } = await import('@neondatabase/serverless');
+        const sql = neon(process.env.DATABASE_URL);
+        await sql`
+          UPDATE volunteer_auth_tokens
+          SET linked_volunteer_id = ${volunteer.id.toString()}, updated_at = NOW()
+          WHERE email = ${data.email.toLowerCase().trim()}
+        `;
+      } catch (err) {
+        console.error("Could not link volunteer to auth token:", err);
+      }
+    }
+
     return NextResponse.json(
       { ...volunteer, experiences: createdExperiences },
       { status: 201 }
