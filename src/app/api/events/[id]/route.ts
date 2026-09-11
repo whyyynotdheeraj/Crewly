@@ -43,6 +43,10 @@ export async function PUT(
       body.appliedCount = Number(body.appliedCount);
     }
 
+    if (body.payout && !body.stipend) {
+      body.stipend = body.payout;
+    }
+
     const updated = await updateUpcomingEvent(Number(id), body);
     if (!updated) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
@@ -53,6 +57,7 @@ export async function PUT(
 
     return NextResponse.json(updated);
   } catch (err) {
+    console.error('Failed to update event:', err);
     return NextResponse.json({ error: 'Failed to update event' }, { status: 500 });
   }
 }

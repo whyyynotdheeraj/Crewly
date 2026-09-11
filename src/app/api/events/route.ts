@@ -24,7 +24,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { title, category, date, city, posterUrl, payout, rolesNeeded, vacancies, organizer, description } = body;
+    const { title, category, date, city, posterUrl, stipend, rolesNeeded, vacancies, organizer, description } = body;
 
     if (!title || !category || !date || !city) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
       date,
       city,
       posterUrl: posterUrl || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?auto=format&fit=crop&w=1200&q=80',
-      payout: payout || '₹2,000 / Day + Meals',
+      stipend: stipend || '₹2,000 / Day + Meals',
       rolesNeeded: Array.isArray(rolesNeeded) ? rolesNeeded : rolesNeeded ? rolesNeeded.split(',').map((s: string) => s.trim()) : ['Event Support'],
       vacancies: Number(vacancies) || 20,
       appliedCount: 0,

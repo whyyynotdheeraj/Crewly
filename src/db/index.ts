@@ -80,7 +80,7 @@ export interface UpcomingEvent {
   date: string;
   city: string;
   posterUrl: string;
-  payout: string;
+  stipend: string;
   rolesNeeded: string[];
   vacancies: number;
   appliedCount: number;

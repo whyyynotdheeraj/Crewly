@@ -23,7 +23,7 @@ function mapEvent(row: any): UpcomingEvent {
     date: row.date,
     city: row.city,
     posterUrl: row.poster_url,
-    payout: row.payout,
+    stipend: row.stipend || row.payout || '',
     rolesNeeded: Array.isArray(row.roles_needed) ? row.roles_needed : typeof row.roles_needed === 'string' ? JSON.parse(row.roles_needed) : [],
     vacancies: Number(row.vacancies || 20),
     appliedCount: Number(row.applied_count || 0),
@@ -101,15 +101,16 @@ export async function neonGetUpcomingEventById(id: number): Promise<UpcomingEven
 
 export async function neonCreateUpcomingEvent(data: Omit<UpcomingEvent, 'id'>): Promise<UpcomingEvent> {
   const sql = getSql();
+  const stipendVal = data.stipend || (data as any).payout || '';
   const rows = await sql`
-    INSERT INTO upcoming_events (title, category, date, city, poster_url, payout, roles_needed, vacancies, applied_count, organizer, description)
+    INSERT INTO upcoming_events (title, category, date, city, poster_url, stipend, roles_needed, vacancies, applied_count, organizer, description)
     VALUES (
       ${data.title},
       ${data.category},
       ${data.date},
       ${data.city},
       ${data.posterUrl},
-      ${data.payout},
+      ${stipendVal},
       ${JSON.stringify(data.rolesNeeded || [])},
       ${data.vacancies || 20},
       ${data.appliedCount || 0},
@@ -127,6 +128,7 @@ export async function neonUpdateUpcomingEvent(id: number, data: Partial<Omit<Upc
   if (!existing) return null;
 
   const merged = { ...existing, ...data };
+  const stipendVal = merged.stipend || (merged as any).payout || '';
   const rows = await sql`
     UPDATE upcoming_events
     SET 
@@ -135,7 +137,7 @@ export async function neonUpdateUpcomingEvent(id: number, data: Partial<Omit<Upc
       date = ${merged.date},
       city = ${merged.city},
       poster_url = ${merged.posterUrl},
-      payout = ${merged.payout},
+      stipend = ${stipendVal},
       roles_needed = ${JSON.stringify(merged.rolesNeeded || [])},
       vacancies = ${merged.vacancies || 20},
       applied_count = ${merged.appliedCount || 0},

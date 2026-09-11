@@ -94,10 +94,10 @@ export default function UpcomingEventCard({ event }: { event: UpcomingEvent }) {
           </p>
         </div>
 
-        {/* Perks & Payout Bar */}
+        {/* Perks & Stipend Bar */}
         <div className="p-3 rounded-2xl bg-gradient-to-r from-indigo-50/90 via-purple-50/90 to-pink-50/90 border border-indigo-100 flex items-center justify-between text-xs">
-          <span className="text-slate-500 font-bold">Payout & Perks</span>
-          <span className="font-black text-indigo-700 text-xs sm:text-sm">{event.payout}</span>
+          <span className="text-slate-500 font-bold">Stipend & Perks</span>
+          <span className="font-black text-indigo-700 text-xs sm:text-sm">{event.stipend}</span>
         </div>
 
         {/* Roles Needed Chips */}
