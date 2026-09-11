@@ -24,7 +24,7 @@ export async function POST(request: NextRequest) {
       role: data.role || "",
       year: data.year || new Date().getFullYear(),
       description: data.description || "",
-      images: data.images || [],
+      images: Array.isArray(data.images) ? data.images : data.imageUrl ? [data.imageUrl] : [],
     });
 
     return NextResponse.json(experience, { status: 201 });

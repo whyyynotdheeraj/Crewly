@@ -96,7 +96,7 @@ export default function AdminNewVolunteerPage() {
 
       if (!volRes.ok) throw new Error('Failed to create volunteer');
       const volData = await volRes.json();
-      const newVolId = volData.data.id;
+      const newVolId = volData.data?.id || volData.id;
 
       // 2. Create Experiences
       if (experiences.length > 0) {

@@ -53,26 +53,37 @@ export default function AdminEditVolunteerPage({ params }: { params: { id: strin
 
         if (volRes.ok) {
           const volData = await volRes.json();
-          const v = volData.data;
+          const v = volData.data || volData;
           setName(v.name || '');
           setPhone(v.phone || '');
           setLocation(v.location || '');
           setBio(v.bio || '');
-          setYearsOfExperience(v.yearsOfExperience || 0);
+          setYearsOfExperience(v.yearsExperience || v.yearsOfExperience || 0);
           setEventsCompleted(v.eventsCompleted || 0);
           setSkills(v.skills || []);
           setProfileImage(v.profileImage || '');
-          setAvailable(v.available ?? true);
+          setAvailable(v.available ?? (v.availability !== 'unavailable'));
           setVerified(v.verified ?? false);
+
+          if (Array.isArray(v.experiences)) {
+            setExperiences(v.experiences.map((e: any) => ({
+              ...e,
+              isNew: false,
+              isDeleted: false
+            })));
+          }
         }
 
         if (expRes.ok) {
           const expData = await expRes.json();
-          setExperiences(expData.data.map((e: any) => ({
-            ...e,
-            isNew: false,
-            isDeleted: false
-          })));
+          const list = Array.isArray(expData) ? expData : expData.data || [];
+          if (list.length > 0) {
+            setExperiences(list.map((e: any) => ({
+              ...e,
+              isNew: false,
+              isDeleted: false
+            })));
+          }
         }
       } catch (error) {
         showMessage('error', 'Failed to fetch volunteer data');

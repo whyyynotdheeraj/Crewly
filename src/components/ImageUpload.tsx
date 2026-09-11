@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 
 interface ImageUploadProps {
   onUpload?: (url: string) => void;
@@ -10,39 +10,92 @@ interface ImageUploadProps {
   value?: string;
 }
 
+function compressImageFile(file: File, maxWidth: number, quality = 0.82): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        let { width, height } = img;
+        if (width > maxWidth) {
+          height = Math.round((height * maxWidth) / width);
+          width = maxWidth;
+        }
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          resolve(e.target?.result as string);
+          return;
+        }
+        ctx.drawImage(img, 0, 0, width, height);
+        const dataUrl = canvas.toDataURL('image/jpeg', quality);
+        resolve(dataUrl);
+      };
+      img.onerror = () => reject(new Error('Image decode failed'));
+      img.src = e.target?.result as string;
+    };
+    reader.onerror = () => reject(new Error('File read failed'));
+    reader.readAsDataURL(file);
+  });
+}
+
 export default function ImageUpload({ onUpload, onChange, type, currentImage, value }: ImageUploadProps) {
   const uploadCallback = onUpload || onChange || (() => {});
-  const initialImage = currentImage || value || null;
-  const [file, setFile] = useState<File | null>(null);
+  const initialImage = value || currentImage || null;
   const [preview, setPreview] = useState<string | null>(initialImage);
-  const [uploading, setUploading] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  useEffect(() => {
+    if (value !== undefined) {
+      setPreview(value || null);
+    } else if (currentImage !== undefined) {
+      setPreview(currentImage || null);
+    }
+  }, [value, currentImage]);
+
+  const processFile = async (selectedFile: File) => {
+    if (!selectedFile.type.startsWith('image/')) {
+      setError('Please select an image file (JPG, PNG, WebP)');
+      return;
+    }
+
+    setProcessing(true);
+    setError(null);
+
+    try {
+      const maxWidth = type === 'profile' ? 600 : 1000;
+      const base64Data = await compressImageFile(selectedFile, maxWidth, 0.82);
+      setPreview(base64Data);
+      uploadCallback(base64Data);
+    } catch (err) {
+      console.error('Image compression error:', err);
+      // Fallback to raw FileReader
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const res = ev.target?.result as string;
+        setPreview(res);
+        uploadCallback(res);
+      };
+      reader.readAsDataURL(selectedFile);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
-      if (!selectedFile.type.startsWith('image/')) {
-        setError('Please select an image file');
-        return;
-      }
-      setFile(selectedFile);
-      setPreview(URL.createObjectURL(selectedFile));
-      setError(null);
+      processFile(e.target.files[0]);
     }
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      const droppedFile = e.dataTransfer.files[0];
-      if (!droppedFile.type.startsWith('image/')) {
-        setError('Please drop an image file');
-        return;
-      }
-      setFile(droppedFile);
-      setPreview(URL.createObjectURL(droppedFile));
-      setError(null);
+      processFile(e.dataTransfer.files[0]);
     }
   };
 
@@ -50,41 +103,10 @@ export default function ImageUpload({ onUpload, onChange, type, currentImage, va
     e.preventDefault();
   };
 
-  const handleUpload = async () => {
-    if (!file) return;
-
-    setUploading(true);
-    setError(null);
-
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', type);
-
-    try {
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        body: formData,
-      });
-
-      if (!response.ok) {
-        throw new Error('Upload failed');
-      }
-
-      const data = await response.json();
-      uploadCallback(data.url);
-      setFile(null);
-    } catch (err) {
-      console.error(err);
-      setError('Failed to upload image. Please try again.');
-    } finally {
-      setUploading(false);
-    }
-  };
-
   const clearSelection = (e: React.MouseEvent) => {
     e.stopPropagation();
-    setFile(null);
-    setPreview(currentImage || null);
+    setPreview(null);
+    uploadCallback('');
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -93,7 +115,11 @@ export default function ImageUpload({ onUpload, onChange, type, currentImage, va
   return (
     <div className="w-full">
       <div 
-        className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:bg-gray-50 hover:border-gray-400 transition-colors duration-200"
+        className={`border-2 border-dashed rounded-xl p-5 text-center cursor-pointer transition-all duration-200 ${
+          preview 
+            ? 'border-emerald-300 bg-emerald-50/20 hover:border-emerald-400' 
+            : 'border-gray-300 hover:bg-gray-50 hover:border-blue-400'
+        }`}
         onClick={() => fileInputRef.current?.click()}
         onDrop={handleDrop}
         onDragOver={handleDragOver}
@@ -106,58 +132,50 @@ export default function ImageUpload({ onUpload, onChange, type, currentImage, va
           accept="image/*" 
         />
         
-        {preview ? (
-          <div className="relative inline-block">
+        {processing ? (
+          <div className="py-6 flex flex-col items-center justify-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mb-2"></div>
+            <p className="text-xs font-semibold text-blue-600">Compressing & optimizing photo...</p>
+          </div>
+        ) : preview ? (
+          <div className="relative inline-block py-1">
             <img 
               src={preview} 
               alt="Preview" 
-              className={`max-w-full mx-auto object-cover ${type === 'profile' ? 'w-32 h-32 rounded-full' : 'max-h-48 rounded-lg'}`}
+              className={`max-w-full mx-auto object-cover shadow-md ${
+                type === 'profile' ? 'w-28 h-28 rounded-full border-2 border-emerald-500' : 'max-h-44 rounded-lg border border-emerald-300'
+              }`}
             />
-            {file && (
-              <button
-                type="button"
-                onClick={clearSelection}
-                className="absolute -top-2 -right-2 bg-white text-gray-600 rounded-full p-1 shadow-md hover:bg-gray-100 hover:text-gray-900"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
-                </svg>
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={clearSelection}
+              className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1.5 shadow-lg transition-transform hover:scale-110"
+              title="Remove photo"
+            >
+              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+            <div className="mt-2 inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 bg-emerald-100/80 px-2.5 py-0.5 rounded-full">
+              <svg className="w-3 h-3 text-emerald-600" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+              <span>Photo Attached (Saved to Database)</span>
+            </div>
+            <p className="text-[11px] text-gray-400 mt-1">Click to change photo</p>
           </div>
         ) : (
           <div className="py-4">
-            <svg className="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            <svg className="mx-auto h-10 w-10 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <p className="text-sm text-gray-600 font-medium">Click to select or drag and drop</p>
-            <p className="text-xs text-gray-500 mt-1">PNG, JPG, GIF up to 5MB</p>
+            <p className="text-sm text-gray-700 font-semibold">Click to select photo from device</p>
+            <p className="text-xs text-gray-400 mt-1">PNG, JPG, WebP up to 5MB (auto-compressed & stored permanently)</p>
           </div>
         )}
       </div>
 
-      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
-
-      {file && (
-        <button
-          type="button"
-          onClick={handleUpload}
-          disabled={uploading}
-          className={`mt-4 w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed`}
-        >
-          {uploading ? (
-            <span className="flex items-center">
-              <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Uploading...
-            </span>
-          ) : (
-            'Upload Image'
-          )}
-        </button>
-      )}
+      {error && <p className="mt-2 text-xs font-semibold text-red-600">{error}</p>}
     </div>
   );
 }
