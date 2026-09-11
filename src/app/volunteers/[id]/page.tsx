@@ -301,9 +301,7 @@ export default function VolunteerProfilePage() {
                   </div>
                 )}
                 {volunteer.verified && (
-                  <span className="absolute -bottom-2 -right-2 bg-indigo-600 text-white rounded-full p-1.5 shadow-md">
-                    <VerifiedBadge size="sm" />
-                  </span>
+                  <span className="absolute -bottom-2 -right-2 bg-indigo-600 text-white rounded-full p-1.5 shadow-md"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7"/></svg></span>
                 )}
               </div>
 
