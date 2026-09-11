@@ -21,31 +21,44 @@ export default function VolunteerProfilePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [isLocked, setIsLocked] = useState(false);
+  const [isOwnProfile, setIsOwnProfile] = useState(false);
 
   useEffect(() => {
     const fetchVolunteer = async () => {
       setLoading(true);
       try {
-        // Check admin status and total volunteer count
-        const [authRes, volsRes, volRes] = await Promise.all([
+        // Check admin status, volunteer session, total volunteer count, and target volunteer
+        const [authRes, volsRes, volRes, volAuthRes] = await Promise.all([
           fetch('/api/auth/check'),
           fetch('/api/volunteers'),
-          fetch(`/api/volunteers/${id}`)
+          fetch(`/api/volunteers/${id}`),
+          fetch('/api/volunteer-auth/session'),
         ]);
 
         const authData = authRes.ok ? await authRes.json() : { authenticated: false };
         const volsData = volsRes.ok ? await volsRes.json() : [];
+        const volAuthData = volAuthRes.ok ? await volAuthRes.json() : { authenticated: false, user: null };
         const totalCount = Array.isArray(volsData) ? volsData.length : (volsData.data?.length || 0);
-
-        if (!authData.authenticated && totalCount < VOLUNTEERS_UNLOCK_THRESHOLD) {
-          setIsLocked(true);
-          setLoading(false);
-          return;
-        }
 
         if (volRes.ok) {
           const data = await volRes.json();
           setVolunteer(data);
+
+          // Check if the viewer owns this profile
+          const own = Boolean(
+            volAuthData.authenticated && (
+              String(volAuthData.user?.volunteerId) === String(id) ||
+              (volAuthData.user?.email && data.email && volAuthData.user.email.toLowerCase() === data.email.toLowerCase())
+            )
+          );
+          setIsOwnProfile(own);
+
+          // If not admin and not owner and count < threshold -> locked
+          if (!authData.authenticated && !own && totalCount < VOLUNTEERS_UNLOCK_THRESHOLD) {
+            setIsLocked(true);
+          } else {
+            setIsLocked(false);
+          }
         } else {
           setError(true);
         }
@@ -187,6 +200,29 @@ export default function VolunteerProfilePage() {
         {/* Top Profile Header Section */}
         <section className="bg-white/80 backdrop-blur-xl py-14 border-b border-slate-200/80 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            {isOwnProfile && (
+              <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-xs flex-shrink-0">
+                    👤
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-bold text-slate-900">Your Volunteer Profile Preview</p>
+                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                        Active & Verified
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-600 mt-0.5">
+                      This is how event organizers see your profile. (Public directory is hidden until 100 volunteers milestone).
+                    </p>
+                  </div>
+                </div>
+                <span className="text-xs font-bold px-3 py-1 bg-white text-indigo-700 rounded-full border border-indigo-200 shadow-xs flex-shrink-0">
+                  Private to You
+                </span>
+              </div>
+            )}
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
               
               {/* Photo with 3D shadow */}

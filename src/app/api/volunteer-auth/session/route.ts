@@ -31,13 +31,27 @@ export async function GET(request: NextRequest) {
     }
 
     const row = rows[0];
+    let volunteerId = row.linked_volunteer_id || null;
+
+    if (!volunteerId && row.email) {
+      try {
+        const volMatch = await sql`SELECT id FROM volunteers WHERE LOWER(email) = LOWER(${row.email}) LIMIT 1`;
+        if (volMatch && volMatch.length > 0) {
+          volunteerId = String(volMatch[0].id);
+          await sql`UPDATE volunteer_auth_tokens SET linked_volunteer_id = ${volunteerId} WHERE token = ${token}`;
+        }
+      } catch (err) {
+        console.error('Error auto-linking volunteer profile:', err);
+      }
+    }
+
     return NextResponse.json({
       authenticated: true,
       user: {
         email: row.email,
         name: row.name || null,
         picture: row.picture || null,
-        volunteerId: row.linked_volunteer_id || null,
+        volunteerId: volunteerId,
       }
     });
 

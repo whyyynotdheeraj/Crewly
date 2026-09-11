@@ -6,6 +6,18 @@ import Logo from './Logo';
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [volUser, setVolUser] = useState<any>(null);
+
+  React.useEffect(() => {
+    fetch('/api/volunteer-auth/session')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.user) {
+          setVolUser(data.user);
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-white/85 backdrop-blur-xl border-b border-slate-200/80 shadow-[0_4px_20px_-4px_rgba(15,23,42,0.04)]">
@@ -34,17 +46,33 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Action Buttons: Exactly the 2 requested buttons */}
+          {/* Action Buttons */}
           <div className="hidden md:flex items-center space-x-3">
-            <Link 
-              href="/join" 
-              className="text-sm font-bold text-slate-700 hover:text-indigo-600 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs hover:border-indigo-300 flex items-center gap-1.5"
-            >
-              <span>Join as Volunteer</span>
-              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600">
-                Free
-              </span>
-            </Link>
+            {volUser ? (
+              <Link 
+                href="/profile" 
+                className="text-sm font-bold text-slate-800 hover:text-indigo-600 px-4 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs hover:border-indigo-300 flex items-center gap-2"
+              >
+                {volUser.picture ? (
+                  <img src={volUser.picture} alt="Profile" className="w-6 h-6 rounded-full object-cover border border-slate-200" />
+                ) : (
+                  <div className="w-6 h-6 rounded-full bg-indigo-600 text-white text-xs flex items-center justify-center font-black">
+                    {(volUser.name || volUser.email)[0].toUpperCase()}
+                  </div>
+                )}
+                <span>My Profile</span>
+              </Link>
+            ) : (
+              <Link 
+                href="/join" 
+                className="text-sm font-bold text-slate-700 hover:text-indigo-600 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs hover:border-indigo-300 flex items-center gap-1.5"
+              >
+                <span>Join as Volunteer</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600">
+                  Free
+                </span>
+              </Link>
+            )}
             <Link 
               href="/request" 
               className="text-sm font-bold px-6 py-2.5 rounded-xl btn-premium-gradient flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
@@ -96,13 +124,23 @@ export default function Navbar() {
             For Event Organizers
           </Link>
           <div className="pt-2 flex flex-col gap-2.5">
-            <Link 
-              href="/join" 
-              onClick={() => setIsOpen(false)}
-              className="text-center text-sm font-bold text-slate-800 py-3 rounded-xl border border-slate-300 bg-slate-50"
-            >
-              Join as Volunteer
-            </Link>
+            {volUser ? (
+              <Link 
+                href="/profile" 
+                onClick={() => setIsOpen(false)}
+                className="text-center text-sm font-bold text-slate-800 py-3 rounded-xl border border-indigo-200 bg-indigo-50/50 flex items-center justify-center gap-2"
+              >
+                <span>👤 My Profile</span>
+              </Link>
+            ) : (
+              <Link 
+                href="/join" 
+                onClick={() => setIsOpen(false)}
+                className="text-center text-sm font-bold text-slate-800 py-3 rounded-xl border border-slate-300 bg-slate-50"
+              >
+                Join as Volunteer
+              </Link>
+            )}
             <Link 
               href="/request" 
               onClick={() => setIsOpen(false)}
