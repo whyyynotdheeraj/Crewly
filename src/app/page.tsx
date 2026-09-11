@@ -2,13 +2,20 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import UpcomingEventsSection from '@/components/UpcomingEventsSection';
-import { getAllUpcomingEvents } from '@/db';
+import { getAllUpcomingEvents, getAllVolunteers } from '@/db';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
 export default async function HomePage() {
-  const events = await getAllUpcomingEvents();
+  const [events, volunteers] = await Promise.all([
+    getAllUpcomingEvents(),
+    getAllVolunteers(),
+  ]);
+
+  const volunteerCount = volunteers.length;
+  const targetCount = 100;
+  const progressPercent = Math.min(100, Math.max(5, Math.round((volunteerCount / targetCount) * 100)));
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-indigo-500 selection:text-white">
@@ -62,25 +69,25 @@ export default async function HomePage() {
                   Stop stressing about unverified volunteers. Crewly connects event companies with pre-vetted stage managers, crowd coordinators, VIP liaisons, and registration staff ready to execute.
                 </p>
 
-                {/* 3D Action Buttons */}
+                {/* 3D Action Buttons: Exactly the 2 requested buttons */}
                 <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
                   <Link
-                    href="/volunteers"
-                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold text-white btn-premium-gradient shadow-xl"
+                    href="/join"
+                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold text-white btn-premium-gradient shadow-xl hover:shadow-2xl transition-all group"
                   >
-                    <span>Browse Verified Volunteers</span>
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <span>Join as a Volunteer</span>
+                    <svg className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </Link>
 
                   <Link
-                    href="/join"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-slate-800 btn-premium-light border border-slate-300"
+                    href="/request"
+                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-slate-800 btn-premium-light border border-slate-300 hover:border-indigo-400 shadow-sm transition-all"
                   >
-                    <span>Register as Volunteer</span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-600 border border-indigo-100">
-                      Join Free
+                    <span>Request for an Event</span>
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-100">
+                      Hire Crew
                     </span>
                   </Link>
                 </div>
@@ -120,80 +127,75 @@ export default async function HomePage() {
               {/* Right Column: Multi-Layered 3D Floating Mockup */}
               <div className="lg:col-span-5 relative flex justify-center py-6">
                 
-                {/* Main 3D Floating Glass Profile Card */}
-                <div className="w-full max-w-sm glass-card rounded-[2rem] p-6 shadow-3d-floating relative animate-float-gentle">
+                {/* Main 3D Floating Glass Milestone Card (Hides profiles until 100 volunteers) */}
+                <div className="w-full max-w-sm glass-card rounded-[2rem] p-6 shadow-3d-floating relative animate-float-gentle border border-indigo-100/80">
                   
-                  {/* Card Header with Glowing Status */}
+                  {/* Card Header with Milestone Badge */}
                   <div className="flex items-center justify-between mb-5">
-                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs">
-                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                      Available This Weekend
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-200 shadow-xs">
+                      <span className="w-2 h-2 rounded-full bg-indigo-600 animate-pulse"></span>
+                      Founding Crew Batch
                     </span>
-                    <div className="flex items-center gap-1 text-amber-600 text-xs font-bold bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200/60">
-                      <svg className="w-3.5 h-3.5 fill-current text-amber-500" viewBox="0 0 24 24">
-                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                      </svg>
-                      <span>4.9</span>
-                      <span className="text-slate-400 font-normal">(24)</span>
-                    </div>
+                    <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2.5 py-0.5 rounded-full border border-slate-200">
+                      Phase 1
+                    </span>
                   </div>
 
-                  {/* Profile Info */}
-                  <div className="flex items-center gap-4 mb-5">
-                    <div className="relative">
-                      <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 p-[3px] shadow-md">
-                        <div className="w-full h-full bg-white rounded-[13px] flex items-center justify-center text-xl font-black text-indigo-600">
-                          AK
-                        </div>
-                      </div>
-                      <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-indigo-600 text-white flex items-center justify-center shadow">
-                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" />
+                  {/* Milestone Heading */}
+                  <div className="space-y-1 mb-5">
+                    <h3 className="text-xl font-black text-slate-900 tracking-tight">
+                      100 Volunteers Milestone
+                    </h3>
+                    <p className="text-xs text-slate-500 leading-relaxed">
+                      All volunteer profiles & portfolios will unlock for public discovery once we hit 100 registered crew.
+                    </p>
+                  </div>
+
+                  {/* Dynamic Progress Bar */}
+                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 to-indigo-50/40 border border-indigo-100/60 mb-5 space-y-2.5">
+                    <div className="flex justify-between items-center text-xs font-bold">
+                      <span className="text-slate-600">Registered Volunteers</span>
+                      <span className="text-indigo-600 font-black">{volunteerCount} / {targetCount}</span>
+                    </div>
+                    
+                    {/* Progress Bar Container */}
+                    <div className="w-full bg-slate-200/80 rounded-full h-3 overflow-hidden p-0.5 border border-slate-200">
+                      <div 
+                        className="h-full rounded-full bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-500 transition-all duration-1000 shadow-xs"
+                        style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+
+                    <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 pt-0.5">
+                      <span>{progressPercent}% Completed</span>
+                      <span className="text-pink-600 flex items-center gap-1">
+                        <svg className="w-3 h-3 fill-current" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
                         </svg>
+                        Profiles Hidden Until 100
                       </span>
                     </div>
-                    <div>
-                      <h3 className="text-lg font-black text-slate-900">Aarav Kapoor</h3>
-                      <p className="text-xs font-medium text-slate-500">Lead Stage Coordinator • Mumbai</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        <span className="text-[11px] font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                          Top Rated Crew
-                        </span>
-                      </div>
-                    </div>
                   </div>
 
-                  {/* Key Stats Bar */}
-                  <div className="grid grid-cols-2 gap-2 p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 mb-5 text-center">
-                    <div>
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Experience</span>
-                      <span className="text-sm font-black text-slate-800">4+ Years</span>
-                    </div>
-                    <div className="border-l border-slate-200">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 block">Events Done</span>
-                      <span className="text-sm font-black text-indigo-600">28+ Summits</span>
-                    </div>
-                  </div>
+                  {/* 2 Quick Action Buttons */}
+                  <div className="space-y-2">
+                    <Link 
+                      href="/join" 
+                      className="w-full py-3 rounded-xl btn-premium-gradient font-bold text-xs text-center block shadow-lg flex items-center justify-center gap-1.5"
+                    >
+                      <span>Join as a Volunteer</span>
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                      </svg>
+                    </Link>
 
-                  {/* Skill Badges */}
-                  <div className="flex flex-wrap gap-1.5 mb-6">
-                    {['Stage Management', 'VIP Protocol', 'Crowd Safety', 'Tech Ops'].map((sk) => (
-                      <span key={sk} className="text-xs font-semibold px-2.5 py-1 rounded-lg bg-white border border-slate-200 text-slate-700 shadow-2xs">
-                        {sk}
-                      </span>
-                    ))}
+                    <Link 
+                      href="/request" 
+                      className="w-full py-2.5 rounded-xl border border-slate-200 hover:border-indigo-300 bg-white hover:bg-slate-50 font-bold text-xs text-slate-700 text-center block shadow-xs transition-colors"
+                    >
+                      Request for an Event
+                    </Link>
                   </div>
-
-                  {/* Profile Action */}
-                  <Link 
-                    href="/volunteers" 
-                    className="w-full py-3 rounded-xl btn-premium-gradient font-bold text-xs text-center block shadow-lg flex items-center justify-center gap-1.5"
-                  >
-                    <span>View Verified Credentials</span>
-                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                    </svg>
-                  </Link>
 
                 </div>
 
@@ -429,16 +431,19 @@ export default async function HomePage() {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
                   <Link
-                    href="/volunteers"
-                    className="px-8 py-4 rounded-2xl text-base font-bold text-white btn-premium-gradient shadow-xl"
+                    href="/join"
+                    className="px-8 py-4 rounded-2xl text-base font-bold text-white btn-premium-gradient shadow-xl hover:shadow-2xl transition-all flex items-center justify-center gap-2"
                   >
-                    Find Volunteers Now
+                    <span>Join as a Volunteer</span>
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                    </svg>
                   </Link>
                   <Link
-                    href="/join"
-                    className="px-8 py-4 rounded-2xl text-base font-bold text-white bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all"
+                    href="/request"
+                    className="px-8 py-4 rounded-2xl text-base font-bold text-white bg-white/10 hover:bg-white/15 border border-white/20 backdrop-blur-md transition-all flex items-center justify-center gap-2"
                   >
-                    Register as Volunteer
+                    <span>Request for an Event</span>
                   </Link>
                 </div>
               </div>

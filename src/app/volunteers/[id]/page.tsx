@@ -11,6 +11,8 @@ import ExperienceCard from '@/components/ExperienceCard';
 import ImageGallery from '@/components/ImageGallery';
 import { getInitials, generateAvatarColor } from '@/lib/utils';
 
+import { VOLUNTEERS_UNLOCK_THRESHOLD } from '@/lib/config';
+
 export default function VolunteerProfilePage() {
   const params = useParams();
   const id = params.id as string;
@@ -18,14 +20,31 @@ export default function VolunteerProfilePage() {
   const [volunteer, setVolunteer] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [isLocked, setIsLocked] = useState(false);
 
   useEffect(() => {
     const fetchVolunteer = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`/api/volunteers/${id}`);
-        if (res.ok) {
-          const data = await res.json();
+        // Check admin status and total volunteer count
+        const [authRes, volsRes, volRes] = await Promise.all([
+          fetch('/api/auth/check'),
+          fetch('/api/volunteers'),
+          fetch(`/api/volunteers/${id}`)
+        ]);
+
+        const authData = authRes.ok ? await authRes.json() : { authenticated: false };
+        const volsData = volsRes.ok ? await volsRes.json() : [];
+        const totalCount = Array.isArray(volsData) ? volsData.length : (volsData.data?.length || 0);
+
+        if (!authData.authenticated && totalCount < VOLUNTEERS_UNLOCK_THRESHOLD) {
+          setIsLocked(true);
+          setLoading(false);
+          return;
+        }
+
+        if (volRes.ok) {
+          const data = await volRes.json();
           setVolunteer(data);
         } else {
           setError(true);
@@ -67,6 +86,55 @@ export default function VolunteerProfilePage() {
     );
   }
 
+  if (isLocked) {
+    return (
+      <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
+        <Navbar />
+        <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
+          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 border border-indigo-100 shadow-3d-xl text-center space-y-6 w-full">
+            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto shadow-sm">
+              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-xs font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1 rounded-full border border-indigo-100">
+                Founding Batch
+              </span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                Profile Unlocking Soon
+              </h1>
+              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
+                Individual volunteer profiles and portfolios are currently reserved and will be unlocked for public viewing once we hit 100 registered volunteers.
+              </p>
+            </div>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/join"
+                className="px-8 py-3.5 rounded-xl btn-premium-gradient text-white font-bold text-sm shadow-md flex items-center justify-center gap-2"
+              >
+                <span>Join as a Volunteer</span>
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                </svg>
+              </Link>
+
+              <Link
+                href="/request"
+                className="px-8 py-3.5 rounded-xl border border-slate-300 hover:border-indigo-400 bg-white hover:bg-slate-50 text-slate-800 font-bold text-sm shadow-xs transition-colors flex items-center justify-center"
+              >
+                Request for an Event
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
   if (error || !volunteer) {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc]">
@@ -74,8 +142,8 @@ export default function VolunteerProfilePage() {
         <main className="flex-1 flex flex-col items-center justify-center py-20 px-4">
           <h1 className="text-3xl font-black text-slate-900 mb-3">Volunteer Not Found</h1>
           <p className="text-slate-500 mb-8">The profile you are looking for doesn't exist or has been removed.</p>
-          <Link href="/volunteers" className="btn-premium-gradient px-8 py-3.5 rounded-2xl font-bold shadow-xl">
-            ← Back to Directory
+          <Link href="/join" className="btn-premium-gradient px-8 py-3.5 rounded-2xl font-bold shadow-xl">
+            Join as a Volunteer
           </Link>
         </main>
         <Footer />

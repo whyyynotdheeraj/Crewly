@@ -26,8 +26,8 @@ export default function Footer() {
             <h3 className="text-xs font-bold text-white uppercase tracking-widest mb-4">Event Companies</h3>
             <ul className="space-y-3 text-sm">
               <li>
-                <Link href="/volunteers" className="hover:text-white transition-colors">
-                  Explore Volunteer Directory
+                <Link href="/request" className="text-indigo-400 hover:text-indigo-300 font-semibold transition-colors">
+                  Request Crew for Event →
                 </Link>
               </li>
               <li>

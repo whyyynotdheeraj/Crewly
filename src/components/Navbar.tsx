@@ -27,12 +27,6 @@ export default function Navbar() {
               <span>Upcoming Gigs</span>
             </Link>
             <Link 
-              href="/volunteers" 
-              className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
-            >
-              Browse Volunteers
-            </Link>
-            <Link 
               href="/companies" 
               className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
             >
@@ -40,19 +34,22 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons: Exactly the 2 requested buttons */}
           <div className="hidden md:flex items-center space-x-3">
             <Link 
               href="/join" 
-              className="text-sm font-bold text-slate-700 hover:text-indigo-600 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs hover:border-indigo-300"
+              className="text-sm font-bold text-slate-700 hover:text-indigo-600 px-5 py-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 transition-all shadow-xs hover:border-indigo-300 flex items-center gap-1.5"
             >
-              Join as Volunteer
+              <span>Join as Volunteer</span>
+              <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-md bg-indigo-50 text-indigo-600">
+                Free
+              </span>
             </Link>
             <Link 
-              href="/volunteers" 
-              className="text-sm font-bold px-6 py-2.5 rounded-xl btn-premium-gradient flex items-center gap-2 shadow-md"
+              href="/request" 
+              className="text-sm font-bold px-6 py-2.5 rounded-xl btn-premium-gradient flex items-center gap-2 shadow-md hover:shadow-lg transition-all"
             >
-              <span>Find Crew</span>
+              <span>Request for an Event</span>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
               </svg>
@@ -92,13 +89,6 @@ export default function Navbar() {
             <span>Upcoming Gigs & Festivals</span>
           </Link>
           <Link 
-            href="/volunteers" 
-            onClick={() => setIsOpen(false)}
-            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50"
-          >
-            Browse Volunteers
-          </Link>
-          <Link 
             href="/companies" 
             onClick={() => setIsOpen(false)}
             className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50"
@@ -109,16 +99,16 @@ export default function Navbar() {
             <Link 
               href="/join" 
               onClick={() => setIsOpen(false)}
-              className="text-center text-sm font-bold text-slate-700 py-3 rounded-xl border border-slate-200 bg-slate-50"
+              className="text-center text-sm font-bold text-slate-800 py-3 rounded-xl border border-slate-300 bg-slate-50"
             >
               Join as Volunteer
             </Link>
             <Link 
-              href="/volunteers" 
+              href="/request" 
               onClick={() => setIsOpen(false)}
-              className="text-center text-sm font-bold text-white py-3 rounded-xl btn-premium-gradient"
+              className="text-center text-sm font-bold text-white py-3 rounded-xl btn-premium-gradient shadow-md"
             >
-              Find Crew Now
+              Request for an Event
             </Link>
           </div>
         </div>
