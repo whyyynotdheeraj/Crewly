@@ -976,6 +976,39 @@ export default function VolunteerProfilePage() {
                   </div>
                 </div>
 
+                {/* Experience (Years) & Total Events Completed */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      Years of Experience (कितने साल का अनुभव है)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={40}
+                      value={editForm.yearsExperience}
+                      onChange={(e) => setEditForm({ ...editForm, yearsExperience: Number(e.target.value) || 0 })}
+                      placeholder="e.g. 2"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      Events Completed (अब तक कितने इवेंट किए)
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      max={500}
+                      value={editForm.eventsCompleted}
+                      onChange={(e) => setEditForm({ ...editForm, eventsCompleted: Number(e.target.value) || 0 })}
+                      placeholder="e.g. 15"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+                </div>
+
                 {/* Skills */}
                 <div>
                   <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
