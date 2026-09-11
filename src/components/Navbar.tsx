@@ -48,10 +48,10 @@ export default function Navbar() {
               <span>Upcoming Gigs</span>
             </Link>
             <Link 
-              href="/companies" 
+              href="/volunteers" 
               className="text-slate-600 hover:text-indigo-600 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
             >
-              For Event Organizers
+              Volunteers
             </Link>
           </div>
 
@@ -149,11 +149,14 @@ export default function Navbar() {
             <span>Home</span>
           </Link>
           <Link 
-            href="/companies" 
+            href="/volunteers" 
             onClick={() => setIsOpen(false)}
-            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50"
+            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50 flex items-center gap-2"
           >
-            For Event Organizers
+            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>Volunteers</span>
           </Link>
           <div className="pt-2 flex flex-col gap-2.5">
             {volUser ? (
