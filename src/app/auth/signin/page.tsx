@@ -67,8 +67,9 @@ function SignInContent() {
 
       setStep('otp');
       setResendCooldown(45);
-      if (data.devOtp) {
-        setDevOtpHint(data.devOtp);
+      const code = data.otp || data.devOtp;
+      if (code) {
+        setDevOtpHint(code);
       }
     } catch (err: any) {
       setErrorMsg(err.message || 'Error sending code.');
@@ -287,6 +288,29 @@ function SignInContent() {
                 Change
               </button>
             </div>
+
+            {devOtpHint && (
+              <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-center space-y-2 animate-in fade-in">
+                <p className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                  Your 6-Digit Verification Code
+                </p>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-2xl font-black tracking-widest text-indigo-950 bg-white px-4 py-1 rounded-xl border border-indigo-200 shadow-xs font-mono">
+                    {devOtpHint}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setOtp(devOtpHint)}
+                    className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                  >
+                    Auto Fill
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-500">
+                  Click &quot;Auto Fill&quot; to verify and log in immediately.
+                </p>
+              </div>
+            )}
 
             <div>
               <label htmlFor="otp" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2 text-center">

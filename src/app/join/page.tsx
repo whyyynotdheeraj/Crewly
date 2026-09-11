@@ -171,7 +171,8 @@ export default function JoinVolunteerPage() {
       if (!res.ok) throw new Error(data.error || 'Failed to send login code.');
       setOtpStep('otp');
       setResendCooldown(45);
-      if (data.devOtp) setDevOtpHint(data.devOtp);
+      const code = data.otp || data.devOtp;
+      if (code) setDevOtpHint(code);
     } catch (err: any) {
       setOtpError(err.message || 'Error sending login code.');
     } finally {
@@ -623,21 +624,6 @@ export default function JoinVolunteerPage() {
               </div>
             )}
 
-            {devOtpHint && (
-              <div className="mb-6 p-4 rounded-xl bg-amber-50 border border-amber-300 text-amber-800 text-sm flex items-start gap-2.5">
-                <div className="w-8 h-8 rounded-lg bg-amber-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-4 h-4 text-amber-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="font-bold">Test OTP (Dev Mode):</p>
-                  <p className="font-mono text-base tracking-widest font-black text-amber-900 mt-0.5">{devOtpHint}</p>
-                  <p className="text-xs text-amber-700 mt-0.5">Use this code below to verify immediately.</p>
-                </div>
-              </div>
-            )}
-
             {/* Google Login Button */}
             <button
               type="button"
@@ -728,6 +714,29 @@ export default function JoinVolunteerPage() {
                     Change
                   </button>
                 </div>
+
+                {devOtpHint && (
+                  <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 text-center space-y-2 animate-in fade-in">
+                    <p className="text-xs font-bold text-indigo-900 uppercase tracking-wider">
+                      Your 6-Digit Verification Code
+                    </p>
+                    <div className="flex items-center justify-center gap-3">
+                      <span className="text-2xl font-black tracking-widest text-indigo-950 bg-white px-4 py-1 rounded-xl border border-indigo-200 shadow-xs font-mono">
+                        {devOtpHint}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setAuthOtp(devOtpHint)}
+                        className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3.5 py-2 rounded-xl transition-all shadow-xs cursor-pointer active:scale-95"
+                      >
+                        Auto Fill
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-500">
+                      Click &quot;Auto Fill&quot; to verify and continue registration immediately.
+                    </p>
+                  </div>
+                )}
 
                 <div>
                   <label htmlFor="authOtp" className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2 text-center">
