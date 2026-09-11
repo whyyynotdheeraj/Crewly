@@ -88,12 +88,6 @@ export async function GET(request: NextRequest) {
         updated_at = NOW()
     `;
 
-    // Check if volunteer profile exists for this email
-    const volunteers = await sql`
-      SELECT id FROM volunteers WHERE email = ${normalizedEmail} LIMIT 1
-    `;
-
-    // Set cookie and redirect
     const response = NextResponse.redirect(`${APP_URL}${callbackUrl}`);
     response.cookies.set('vol_token', token, {
       httpOnly: true,
@@ -105,8 +99,8 @@ export async function GET(request: NextRequest) {
 
     return response;
 
-  } catch (error: any) {
-    console.error('Google callback error:', error);
+  } catch {
     return NextResponse.redirect(`${APP_URL}/auth/signin?error=server_error`);
   }
 }
+

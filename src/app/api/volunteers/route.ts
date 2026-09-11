@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Link with volunteer_auth_tokens if email is registered
+    // Link with volunteer_auth_tokens if email matches a registered session
     if (data.email && process.env.DATABASE_URL) {
       try {
         const { neon } = await import('@neondatabase/serverless');
@@ -101,8 +101,8 @@ export async function POST(request: NextRequest) {
           SET linked_volunteer_id = ${volunteer.id.toString()}, updated_at = NOW()
           WHERE email = ${data.email.toLowerCase().trim()}
         `;
-      } catch (err) {
-        console.error("Could not link volunteer to auth token:", err);
+      } catch {
+        // Non-critical — profile still created successfully
       }
     }
 
@@ -110,10 +110,9 @@ export async function POST(request: NextRequest) {
       { ...volunteer, experiences: createdExperiences },
       { status: 201 }
     );
-  } catch (error) {
-    console.error("Error creating volunteer:", error);
+  } catch {
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

@@ -51,12 +51,11 @@ export async function GET(request: NextRequest) {
         email: row.email,
         name: row.name || null,
         picture: row.picture || null,
-        volunteerId: volunteerId,
+        volunteerId,
       }
     });
 
-  } catch (error: any) {
-    console.error('Auth check error:', error);
+  } catch {
     return NextResponse.json({ authenticated: false, user: null });
   }
 }
@@ -75,8 +74,8 @@ export async function DELETE(request: NextRequest) {
     response.cookies.delete('vol_token');
     return response;
 
-  } catch (error: any) {
-    console.error('Logout error:', error);
+  } catch {
     return NextResponse.json({ error: 'Logout failed' }, { status: 500 });
   }
 }
+

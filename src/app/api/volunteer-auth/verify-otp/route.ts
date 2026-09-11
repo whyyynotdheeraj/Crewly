@@ -54,9 +54,8 @@ export async function POST(request: NextRequest) {
     const volunteers = await sql`
       SELECT id, name FROM volunteers WHERE email = ${normalizedEmail} LIMIT 1
     `;
-    const linkedVolunteer = volunteers && volunteers.length > 0 ? volunteers[0] : null;
+    const linkedVolunteer = volunteers.length > 0 ? volunteers[0] : null;
 
-    // Set cookie
     const response = NextResponse.json({
       success: true,
       user: {
@@ -76,8 +75,7 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch (error: any) {
-    console.error('Verify OTP error:', error);
+  } catch {
     return NextResponse.json({ error: 'Verification failed. Try again.' }, { status: 500 });
   }
 }

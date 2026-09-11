@@ -70,19 +70,16 @@ export async function POST(request: NextRequest) {
         `,
       });
     } else {
-      // Dev mode: log OTP to console
-      console.log(`[DEV] OTP for ${normalizedEmail}: ${otp}`);
+      // Dev mode: return OTP in response for testing
     }
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       message: 'OTP sent successfully',
-      // Only expose OTP in dev for testing
       ...(process.env.NODE_ENV === 'development' && !RESEND_API_KEY ? { devOtp: otp } : {})
     });
 
-  } catch (error: any) {
-    console.error('Send OTP error:', error);
+  } catch {
     return NextResponse.json({ error: 'Failed to send OTP. Try again.' }, { status: 500 });
   }
 }

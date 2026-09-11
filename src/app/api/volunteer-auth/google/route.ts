@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { neon } from '@neondatabase/serverless';
-import { generateToken } from '@/lib/volunteer-auth';
 
-const DATABASE_URL = process.env.DATABASE_URL!;
 const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID!;
-const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET!;
 const APP_URL = process.env.NEXTAUTH_URL || 'http://localhost:3000';
-
-function getSql() {
-  return neon(DATABASE_URL);
-}
 
 // Step 1: Redirect to Google OAuth
 export async function GET(request: NextRequest) {

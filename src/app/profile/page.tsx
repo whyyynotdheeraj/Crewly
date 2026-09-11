@@ -1,13 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
 export default function ProfileRedirectPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function checkAndRedirect() {
@@ -24,11 +23,8 @@ export default function ProfileRedirectPage() {
         } else {
           router.replace('/auth/signin?callbackUrl=/profile');
         }
-      } catch (err) {
-        console.error('Error checking profile:', err);
+      } catch {
         router.replace('/join');
-      } finally {
-        setLoading(false);
       }
     }
 

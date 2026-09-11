@@ -96,6 +96,13 @@ export default function JoinVolunteerPage() {
   const [devOtpHint, setDevOtpHint] = useState<string | null>(null);
   const [resendCooldown, setResendCooldown] = useState(0);
 
+  // Gig Application State
+  const [eventRoles, setEventRoles] = useState<string[]>([]);
+  const [selectedRole, setSelectedRole] = useState<string>('');
+  const [applyingGig, setApplyingGig] = useState(false);
+  const [gigAppliedSuccess, setGigAppliedSuccess] = useState(false);
+  const [showEditProfile, setShowEditProfile] = useState(false);
+
   const checkSession = async () => {
     try {
       setAuthLoading(true);
@@ -106,6 +113,22 @@ export default function JoinVolunteerPage() {
         setEmail(data.user.email);
         if (data.user.name) setName((prev) => prev || data.user.name);
         if (data.user.picture) setProfileImage((prev) => prev || data.user.picture);
+
+        // If user already has a volunteer profile, load existing details
+        if (data.user.volunteerId) {
+          try {
+            const vRes = await fetch(`/api/volunteers/${data.user.volunteerId}`);
+            if (vRes.ok) {
+              const vData = await vRes.json();
+              if (vData.name) setName(vData.name);
+              if (vData.phone) setPhone(vData.phone);
+              if (vData.location) setLocation(vData.location);
+              if (vData.skills && vData.skills.length > 0) setSkills(vData.skills);
+              if (vData.bio) setBio(vData.bio);
+              if (vData.profileImage) setProfileImage(vData.profileImage);
+            }
+          } catch {}
+        }
       } else {
         setAuthUser(null);
       }
@@ -196,9 +219,48 @@ export default function JoinVolunteerPage() {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
       const evt = params.get('event');
+      const rls = params.get('roles');
       if (evt) setTargetEvent(evt);
+      if (rls) {
+        const parsed = rls.split(',').map((r) => r.trim()).filter(Boolean);
+        setEventRoles(parsed);
+        if (parsed.length > 0) setSelectedRole(parsed[0]);
+      }
     }
   }, []);
+
+  const handleApplyGig = async (eventTitleToApply?: string, roleToApply?: string) => {
+    const eventName = eventTitleToApply || targetEvent;
+    if (!eventName) return;
+
+    setApplyingGig(true);
+    try {
+      const res = await fetch('/api/events/apply', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          eventTitle: eventName,
+          roleApplied: roleToApply || selectedRole || 'Event Volunteer',
+          volunteerId: authUser?.volunteerId || createdVolunteer?.id,
+          volunteerName: name || authUser?.name,
+          volunteerEmail: email || authUser?.email,
+          volunteerPhone: phone,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error || 'Failed to submit application.');
+      }
+
+      setGigAppliedSuccess(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err: any) {
+      alert(err.message || 'Error submitting application.');
+    } finally {
+      setApplyingGig(false);
+    }
+  };
 
   const addExperience = () => {
     setExperiences([
@@ -315,6 +377,28 @@ export default function JoinVolunteerPage() {
 
       const created = await res.json();
       setCreatedVolunteer(created);
+
+      // If user came to apply for an event gig, automatically submit gig application!
+      if (targetEvent) {
+        try {
+          await fetch('/api/events/apply', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              eventTitle: targetEvent,
+              roleApplied: selectedRole || 'Event Volunteer',
+              volunteerId: created.id,
+              volunteerName: created.name,
+              volunteerEmail: created.email,
+              volunteerPhone: created.phone,
+            }),
+          });
+          setGigAppliedSuccess(true);
+        } catch (e) {
+          console.error('Error auto-applying for event:', e);
+        }
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (err: any) {
       console.error('Registration error:', err);
@@ -324,7 +408,56 @@ export default function JoinVolunteerPage() {
     }
   };
 
-  // SUCCESS SCREEN
+  // GIG APPLICATION SUCCESS SCREEN
+  if (gigAppliedSuccess) {
+    return (
+      <div className="min-h-screen flex flex-col bg-slate-50">
+        <Navbar />
+        <main className="flex-1 max-w-2xl w-full mx-auto px-4 py-16 text-center">
+          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-indigo-100">
+            <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-sm">
+              <svg className="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <span className="text-xs font-black uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
+              Gig Application Confirmed
+            </span>
+            <h1 className="text-2xl sm:text-3xl font-black text-slate-900 mt-4 mb-2">
+              You Have Applied for {targetEvent || 'Event Gig'}!
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600 max-w-md mx-auto mb-6">
+              Your verified volunteer profile has been submitted directly to the event producers. You will be contacted via WhatsApp/Email for the briefing and crew pass.
+            </p>
+
+            {selectedRole && (
+              <div className="inline-block bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold px-4 py-2 rounded-xl mb-6">
+                Role Applied: {selectedRole}
+              </div>
+            )}
+
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Link
+                href="/#upcoming-events"
+                className="btn-premium-gradient font-bold px-6 py-3.5 rounded-xl shadow-md text-sm text-center"
+              >
+                Explore More Gigs →
+              </Link>
+              <Link
+                href="/profile"
+                className="border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold px-6 py-3.5 rounded-xl text-sm text-center"
+              >
+                View My Profile
+              </Link>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    );
+  }
+
+  // REGISTRATION SUCCESS SCREEN
   if (createdVolunteer) {
     return (
       <div className="min-h-screen flex flex-col bg-gray-50">
@@ -663,13 +796,141 @@ export default function JoinVolunteerPage() {
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* 1. PERSONAL INFORMATION */}
-              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
-                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                  <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
-                  Personal Information
-                </h2>
+            {authUser.volunteerId && !showEditProfile ? (
+              targetEvent ? (
+                /* DIRECT 1-CLICK GIG APPLICATION CARD */
+                <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 md:p-10 shadow-xl border border-indigo-100 max-w-xl mx-auto text-left mb-8 animate-in fade-in">
+                  <div className="text-center mb-6">
+                    <span className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full text-xs font-black uppercase tracking-wider bg-emerald-50 text-emerald-700 border border-emerald-200 shadow-xs mb-3">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                      Direct 1-Click Gig Application
+                    </span>
+                    <h2 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                      {targetEvent}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-slate-500 mt-1">
+                      Your volunteer profile is already verified! Apply directly below without filling any forms again.
+                    </p>
+                  </div>
+
+                  {/* Profile Summary Pill */}
+                  <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200 mb-6 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {authUser.picture ? (
+                        <img src={authUser.picture} alt="Profile" className="w-12 h-12 rounded-full object-cover border border-emerald-300 shadow-xs" />
+                      ) : (
+                        <div className="w-12 h-12 rounded-full bg-indigo-600 text-white font-black flex items-center justify-center text-lg shadow-xs">
+                          {(authUser.name || authUser.email)[0].toUpperCase()}
+                        </div>
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-sm font-bold text-slate-900">{authUser.name || 'Verified Volunteer'}</p>
+                          <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded bg-emerald-100 text-emerald-800">✓ Ready</span>
+                        </div>
+                        <p className="text-xs text-slate-500">{authUser.email}</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Preferred Role Selection Chips */}
+                  {eventRoles.length > 0 && (
+                    <div className="mb-6">
+                      <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-2">
+                        Select Preferred Ground Role:
+                      </label>
+                      <div className="flex flex-wrap gap-2">
+                        {eventRoles.map((role) => (
+                          <button
+                            key={role}
+                            type="button"
+                            onClick={() => setSelectedRole(role)}
+                            className={`text-xs px-3.5 py-2 rounded-xl font-bold transition-all ${
+                              selectedRole === role
+                                ? 'bg-indigo-600 text-white shadow-md'
+                                : 'bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200'
+                            }`}
+                          >
+                            {role}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Direct 1-Click Apply Button */}
+                  <button
+                    type="button"
+                    onClick={() => handleApplyGig()}
+                    disabled={applyingGig}
+                    className="w-full py-4 px-6 rounded-2xl btn-premium-gradient font-black text-sm text-white shadow-xl flex items-center justify-center gap-2 active:scale-[0.99] disabled:opacity-50 cursor-pointer"
+                  >
+                    {applyingGig ? (
+                      <>
+                        <span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin"></span>
+                        <span>Applying for Gig...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>⚡ Apply for this Gig Now (1-Click)</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="mt-6 pt-4 border-t border-slate-100 text-center">
+                    <button
+                      type="button"
+                      onClick={() => setShowEditProfile(true)}
+                      className="text-xs font-semibold text-indigo-600 hover:text-indigo-800 underline transition-colors"
+                    >
+                      Want to update your volunteer details or experiences? Click here
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                /* PROFILE READY DASHBOARD (NO TARGET EVENT) */
+                <div className="bg-white rounded-3xl p-8 md:p-10 shadow-xl border border-indigo-100 max-w-xl mx-auto text-center mb-8 animate-in fade-in">
+                  <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-sm">
+                    ✓
+                  </div>
+                  <h2 className="text-2xl font-black text-slate-900 tracking-tight">Your Volunteer Profile is Active!</h2>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 mb-6">
+                    You are already registered in the Crewly network. You can directly apply to any gig with 1-click.
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center mb-6">
+                    <Link
+                      href="/#upcoming-events"
+                      className="btn-premium-gradient font-bold px-6 py-3.5 rounded-xl text-xs sm:text-sm shadow-md"
+                    >
+                      Browse Upcoming Gigs to Apply →
+                    </Link>
+                    <Link
+                      href={`/volunteers/${authUser.volunteerId}`}
+                      className="border border-slate-200 hover:bg-slate-50 text-slate-700 font-bold px-6 py-3.5 rounded-xl text-xs sm:text-sm"
+                    >
+                      View My Profile
+                    </Link>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditProfile(true)}
+                    className="text-xs font-semibold text-slate-400 hover:text-indigo-600 underline"
+                  >
+                    Need to edit your volunteer details? Click here
+                  </button>
+                </div>
+              )
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-8">
+                {/* 1. PERSONAL INFORMATION */}
+                <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100">
+                  <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+                    <span className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-sm font-bold">1</span>
+                    Personal Information
+                  </h2>
 
             {/* Profile Photo */}
             <div className="mb-6">
@@ -1107,7 +1368,11 @@ export default function JoinVolunteerPage() {
                   <span>Creating Your Profile...</span>
                 </>
               ) : (
-                <span>Register & Create Volunteer Profile</span>
+                <span>
+                  {targetEvent
+                    ? `Register Profile & Apply for "${targetEvent}" →`
+                    : 'Register & Create Volunteer Profile'}
+                </span>
               )}
             </button>
             <p className="text-center text-xs text-gray-500 mt-3">
@@ -1115,9 +1380,10 @@ export default function JoinVolunteerPage() {
             </p>
           </div>
         </form>
-      </>
-    )}
-  </main>
+      )}
+    </>
+  )}
+</main>
 
       <Footer />
     </div>
