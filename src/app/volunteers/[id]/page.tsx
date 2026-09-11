@@ -103,7 +103,29 @@ export default function VolunteerProfilePage() {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
         <Navbar />
-        <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-16 flex items-center justify-center">
+        <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <div className="flex items-center justify-between mb-6">
+            <button
+              type="button"
+              onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+              className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              <span>Back</span>
+            </button>
+            <Link
+              href="/"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-xs transition-all"
+            >
+              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Home</span>
+            </Link>
+          </div>
+
           <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 border border-indigo-100 shadow-3d-xl text-center space-y-6 w-full">
             <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto shadow-sm">
               <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -200,6 +222,30 @@ export default function VolunteerProfilePage() {
         {/* Top Profile Header Section */}
         <section className="bg-white/80 backdrop-blur-xl py-14 border-b border-slate-200/80 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            {/* Navigation Actions (Back & Home) */}
+            <div className="flex items-center justify-between mb-8">
+              <button
+                type="button"
+                onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+                className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+                <span>Back</span>
+              </button>
+
+              <Link
+                href="/"
+                className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-all"
+              >
+                <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+                </svg>
+                <span>Home</span>
+              </Link>
+            </div>
+
             {isOwnProfile && (
               <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-indigo-50 via-purple-50 to-pink-50 border border-indigo-200 text-indigo-950 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
                 <div className="flex items-center gap-3">

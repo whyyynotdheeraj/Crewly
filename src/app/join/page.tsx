@@ -529,7 +529,31 @@ export default function JoinVolunteerPage() {
       <div className="fixed top-10 left-1/3 w-[35rem] h-[25rem] bg-indigo-200/35 rounded-full blur-[120px] pointer-events-none" />
       <div className="fixed top-1/2 right-10 w-[30rem] h-[25rem] bg-pink-200/25 rounded-full blur-[130px] pointer-events-none" />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-14 relative z-10">
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10 relative z-10">
+        {/* Navigation Actions (Back & Home) */}
+        <div className="flex items-center justify-between mb-8">
+          <button
+            type="button"
+            onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+            className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            <span>Back</span>
+          </button>
+
+          <Link
+            href="/"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-all"
+          >
+            <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Home</span>
+          </Link>
+        </div>
+
         {/* Header */}
         <div className="mb-12 text-center">
           <div className="inline-block bg-indigo-50 text-indigo-700 text-xs font-extrabold px-3.5 py-1.5 rounded-full uppercase tracking-wider mb-3 border border-indigo-100">

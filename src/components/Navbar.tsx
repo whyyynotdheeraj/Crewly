@@ -30,17 +30,26 @@ export default function Navbar() {
           </div>
 
           {/* Nav Links */}
-          <div className="hidden md:flex md:items-center md:space-x-1 bg-slate-100/90 border border-slate-200/80 rounded-full px-4 py-1.5 shadow-inner">
+          <div className="hidden md:flex md:items-center md:space-x-1 bg-slate-100/90 border border-slate-200/80 rounded-full px-3 py-1.5 shadow-inner">
+            <Link 
+              href="/" 
+              className="text-slate-600 hover:text-indigo-600 px-3 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs flex items-center gap-1.5"
+            >
+              <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+              </svg>
+              <span>Home</span>
+            </Link>
             <Link 
               href="/#upcoming-events" 
-              className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs flex items-center gap-1.5"
+              className="text-slate-600 hover:text-indigo-600 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs flex items-center gap-1.5"
             >
               <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
               <span>Upcoming Gigs</span>
             </Link>
             <Link 
               href="/companies" 
-              className="text-slate-600 hover:text-indigo-600 px-4 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
+              className="text-slate-600 hover:text-indigo-600 px-3.5 py-1.5 rounded-full text-sm font-semibold transition-all hover:bg-white hover:shadow-xs"
             >
               For Event Organizers
             </Link>
@@ -108,6 +117,16 @@ export default function Navbar() {
       {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-3 shadow-xl">
+          <Link 
+            href="/" 
+            onClick={() => setIsOpen(false)}
+            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50 flex items-center gap-2"
+          >
+            <svg className="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>Home</span>
+          </Link>
           <Link 
             href="/#upcoming-events" 
             onClick={() => setIsOpen(false)}

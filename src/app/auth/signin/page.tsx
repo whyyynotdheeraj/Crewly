@@ -117,6 +117,30 @@ function SignInContent() {
 
   return (
     <div className="w-full max-w-md mx-auto">
+      {/* Navigation Actions (Back & Home) */}
+      <div className="flex items-center justify-between mb-4">
+        <button
+          type="button"
+          onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+          className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span>Back</span>
+        </button>
+
+        <Link
+          href="/"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs transition-all"
+        >
+          <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
+          <span>Home</span>
+        </Link>
+      </div>
+
       {/* Brand card */}
       <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-xl border border-slate-200/80">
         
