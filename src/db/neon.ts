@@ -47,6 +47,7 @@ function mapVolunteer(row: any): Volunteer {
     availability: row.availability || 'available',
     verified: Boolean(row.verified),
     profileImage: row.profile_image || null,
+    displayOrder: Number(row.display_order || row.id || 0),
     createdAt: row.created_at ? new Date(row.created_at).toISOString() : new Date().toISOString(),
     updatedAt: row.updated_at ? new Date(row.updated_at).toISOString() : new Date().toISOString(),
   };
@@ -160,7 +161,7 @@ export async function neonDeleteUpcomingEvent(id: number): Promise<boolean> {
 
 export async function neonGetAllVolunteers(): Promise<Volunteer[]> {
   const sql = getSql();
-  const rows = await sql`SELECT * FROM volunteers ORDER BY id DESC;`;
+  const rows = await sql`SELECT * FROM volunteers ORDER BY display_order ASC, id DESC;`;
   return rows.map(mapVolunteer);
 }
 

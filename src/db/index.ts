@@ -25,6 +25,8 @@ import {
   neonGetStats,
 } from "./neon";
 
+export { isNeonConfigured };
+
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
 export interface Volunteer {
@@ -41,6 +43,7 @@ export interface Volunteer {
   availability: "available" | "unavailable";
   verified: boolean;
   profileImage: string | null;
+  displayOrder?: number;
   createdAt: string;
   updatedAt: string;
 }

@@ -112,6 +112,36 @@ export default function AdminVolunteersPage() {
     }
   };
 
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const newVolunteers = [...volunteers];
+    const targetIndex = direction === 'up' ? index - 1 : index + 1;
+
+    if (targetIndex < 0 || targetIndex >= newVolunteers.length) return;
+
+    // Swap elements
+    const temp = newVolunteers[index];
+    newVolunteers[index] = newVolunteers[targetIndex];
+    newVolunteers[targetIndex] = temp;
+
+    setVolunteers(newVolunteers);
+
+    try {
+      const res = await fetch('/api/volunteers/reorder', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ volunteerIds: newVolunteers.map((v) => v.id) }),
+      });
+
+      if (res.ok) {
+        showMessage('success', 'Order updated & live on website!');
+      } else {
+        showMessage('error', 'Failed to update order');
+      }
+    } catch {
+      showMessage('error', 'Error reordering volunteers');
+    }
+  };
+
   // Filtered volunteers
   const filteredVolunteers = volunteers.filter((v) => {
     const q = searchQuery.toLowerCase().trim();
@@ -252,11 +282,12 @@ export default function AdminVolunteersPage() {
                   <th className="py-4 px-6">Experience</th>
                   <th className="py-4 px-6">Skills</th>
                   <th className="py-4 px-6">Verification</th>
+                  <th className="py-4 px-4 text-center">Shuffle</th>
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100 text-sm">
-                {filteredVolunteers.map((v) => (
+                {filteredVolunteers.map((v, idx) => (
                   <tr key={v.id} className="hover:bg-blue-50/30 transition-colors">
                     {/* Profile Photo */}
                     <td className="py-4 px-6">
@@ -371,6 +402,34 @@ export default function AdminVolunteersPage() {
                       >
                         {v.verified ? '✓ Verified' : '○ Unverified'}
                       </button>
+                    </td>
+
+                    {/* Shuffle / Reorder Controls */}
+                    <td className="py-4 px-4 text-center whitespace-nowrap">
+                      <div className="flex items-center justify-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => handleMove(idx, 'up')}
+                          disabled={idx === 0}
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
+                          title="Move Up"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" />
+                          </svg>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleMove(idx, 'down')}
+                          disabled={idx === filteredVolunteers.length - 1}
+                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
+                          title="Move Down"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
+                          </svg>
+                        </button>
+                      </div>
                     </td>
 
                     {/* Actions */}
