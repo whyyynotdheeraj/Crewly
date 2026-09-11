@@ -58,8 +58,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Default to verified=true if not explicitly false (allowing registered volunteers to show their verified badge)
-    const isVerified = data.verified !== undefined ? Boolean(data.verified) : true;
+    // Default to verified=false so newly registered volunteers are unverified by default until admin manually approves
+    const isVerified = data.verified !== undefined ? Boolean(data.verified) : false;
 
     const volunteer = await createVolunteer({
       name: data.name.trim(),

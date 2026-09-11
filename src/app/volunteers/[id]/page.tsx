@@ -246,6 +246,25 @@ export default function VolunteerProfilePage() {
     }));
   };
 
+  const handleAdminToggleVerify = async () => {
+    if (!volunteer || !isAdmin) return;
+    const newStatus = !volunteer.verified;
+    try {
+      const res = await fetch(`/api/volunteers/${id}/verify`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ verified: newStatus }),
+      });
+      if (res.ok) {
+        setVolunteer((prev: any) => (prev ? { ...prev, verified: newStatus } : prev));
+      } else {
+        alert('Failed to update verification status');
+      }
+    } catch {
+      alert('Error updating verification status');
+    }
+  };
+
   // Table Row Handlers
   const handleAddRow = () => {
     setExperienceRows((prev) => [...prev, { eventName: '', role: '', place: '' }]);
@@ -523,16 +542,34 @@ export default function VolunteerProfilePage() {
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(true)}
-                  className="text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs flex items-center gap-1.5 transition-all self-end sm:self-center cursor-pointer"
-                >
-                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                  </svg>
-                  <span>Edit Profile Now</span>
-                </button>
+                <div className="flex flex-wrap items-center gap-2 self-end sm:self-center">
+                  {isAdmin && (
+                    <button
+                      type="button"
+                      onClick={handleAdminToggleVerify}
+                      className={`text-xs font-bold px-4 py-2 rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer ${
+                        volunteer?.verified
+                          ? 'bg-emerald-600 hover:bg-emerald-700 text-white'
+                          : 'bg-amber-500 hover:bg-amber-600 text-white'
+                      }`}
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span>{volunteer?.verified ? '✓ Verified (Click to Unverify)' : '○ Verify Volunteer Now'}</span>
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs flex items-center gap-1.5 transition-all cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                    <span>Edit Profile Now</span>
+                  </button>
+                </div>
               </div>
             )}
 
