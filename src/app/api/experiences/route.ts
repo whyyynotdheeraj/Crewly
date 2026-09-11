@@ -17,7 +17,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const experience = createExperience({
+    const experience = await createExperience({
       volunteerId: data.volunteerId,
       eventName: data.eventName,
       eventType: data.eventType || "",

@@ -7,7 +7,7 @@ export const revalidate = 0;
 
 export async function GET() {
   try {
-    const events = getAllUpcomingEvents();
+    const events = await getAllUpcomingEvents();
     return NextResponse.json(events, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
-    const event = createUpcomingEvent({
+    const event = await createUpcomingEvent({
       title,
       category,
       date,

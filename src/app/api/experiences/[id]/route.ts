@@ -13,7 +13,7 @@ export async function PUT(
 
     const { id } = await params;
     const data = await request.json();
-    const updated = updateExperience(parseInt(id, 10), data);
+    const updated = await updateExperience(parseInt(id, 10), data);
 
     if (!updated) {
       return NextResponse.json(
@@ -42,7 +42,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const deleted = deleteExperience(parseInt(id, 10));
+    const deleted = await deleteExperience(parseInt(id, 10));
 
     if (!deleted) {
       return NextResponse.json(

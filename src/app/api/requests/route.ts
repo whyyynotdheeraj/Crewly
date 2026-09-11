@@ -8,7 +8,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const requests = getAllRequests();
+    const requests = await getAllRequests();
     return NextResponse.json(requests);
   } catch (error) {
     console.error("Error fetching requests:", error);
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const companyRequest = createRequest({
+    const companyRequest = await createRequest({
       companyName: data.companyName,
       contactPerson: contactPerson,
       phone: data.phone,

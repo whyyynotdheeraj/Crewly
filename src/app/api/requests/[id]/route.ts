@@ -21,7 +21,7 @@ export async function PUT(
       );
     }
 
-    const updated = updateRequestStatus(parseInt(id, 10), status);
+    const updated = await updateRequestStatus(parseInt(id, 10), status);
 
     if (!updated) {
       return NextResponse.json(
@@ -50,7 +50,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const deleted = deleteRequest(parseInt(id, 10));
+    const deleted = await deleteRequest(parseInt(id, 10));
 
     if (!deleted) {
       return NextResponse.json(

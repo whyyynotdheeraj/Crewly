@@ -14,7 +14,7 @@ export async function PATCH(
     const { id } = await params;
     const { verified } = await request.json();
 
-    const volunteer = getVolunteerById(parseInt(id, 10));
+    const volunteer = await getVolunteerById(parseInt(id, 10));
     if (!volunteer) {
       return NextResponse.json(
         { error: "Volunteer not found" },
@@ -22,7 +22,7 @@ export async function PATCH(
       );
     }
 
-    const updated = updateVolunteer(parseInt(id, 10), {
+    const updated = await updateVolunteer(parseInt(id, 10), {
       verified: Boolean(verified),
     });
 

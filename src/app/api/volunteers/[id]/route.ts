@@ -13,7 +13,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const volunteer = getVolunteerById(parseInt(id, 10));
+    const volunteer = await getVolunteerById(parseInt(id, 10));
 
     if (!volunteer) {
       return NextResponse.json(
@@ -22,7 +22,7 @@ export async function GET(
       );
     }
 
-    const experiences = getExperiencesByVolunteerId(volunteer.id);
+    const experiences = await getExperiencesByVolunteerId(volunteer.id);
     const authenticated = await isAuthenticated();
 
     // Only include phone for admin
@@ -52,7 +52,7 @@ export async function PUT(
 
     const { id } = await params;
     const data = await request.json();
-    const updated = updateVolunteer(parseInt(id, 10), data);
+    const updated = await updateVolunteer(parseInt(id, 10), data);
 
     if (!updated) {
       return NextResponse.json(
@@ -81,7 +81,7 @@ export async function DELETE(
     }
 
     const { id } = await params;
-    const deleted = deleteVolunteer(parseInt(id, 10));
+    const deleted = await deleteVolunteer(parseInt(id, 10));
 
     if (!deleted) {
       return NextResponse.json(

@@ -7,8 +7,8 @@ import { getAllUpcomingEvents } from '@/db';
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-export default function HomePage() {
-  const events = getAllUpcomingEvents();
+export default async function HomePage() {
+  const events = await getAllUpcomingEvents();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900 selection:bg-indigo-500 selection:text-white">

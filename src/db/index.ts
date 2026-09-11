@@ -1,5 +1,29 @@
 import fs from "fs";
 import path from "path";
+import {
+  isNeonConfigured,
+  neonGetAllUpcomingEvents,
+  neonGetUpcomingEventById,
+  neonCreateUpcomingEvent,
+  neonUpdateUpcomingEvent,
+  neonDeleteUpcomingEvent,
+  neonGetAllVolunteers,
+  neonGetVolunteerById,
+  neonCreateVolunteer,
+  neonUpdateVolunteer,
+  neonDeleteVolunteer,
+  neonSearchVolunteers,
+  neonGetExperiencesByVolunteerId,
+  neonCreateExperience,
+  neonUpdateExperience,
+  neonDeleteExperience,
+  neonGetAllRequests,
+  neonGetRequestById,
+  neonCreateRequest,
+  neonUpdateRequestStatus,
+  neonDeleteRequest,
+  neonGetStats,
+} from "./neon";
 
 const DB_PATH = path.join(process.cwd(), "data", "db.json");
 
@@ -115,17 +139,26 @@ function writeDb(data: Database): void {
 
 // ============== VOLUNTEERS ==============
 
-export function getAllVolunteers(): Volunteer[] {
+export async function getAllVolunteers(): Promise<Volunteer[]> {
+  if (isNeonConfigured()) {
+    return neonGetAllVolunteers();
+  }
   const db = readDb();
   return db.volunteers;
 }
 
-export function getVolunteerById(id: number): Volunteer | undefined {
+export async function getVolunteerById(id: number): Promise<Volunteer | undefined> {
+  if (isNeonConfigured()) {
+    return neonGetVolunteerById(id);
+  }
   const db = readDb();
   return db.volunteers.find((v) => v.id === id);
 }
 
-export function createVolunteer(data: Omit<Volunteer, "id" | "createdAt" | "updatedAt">): Volunteer {
+export async function createVolunteer(data: Omit<Volunteer, "id" | "createdAt" | "updatedAt">): Promise<Volunteer> {
+  if (isNeonConfigured()) {
+    return neonCreateVolunteer(data);
+  }
   const db = readDb();
   const volunteer: Volunteer = {
     ...data,
@@ -138,39 +171,47 @@ export function createVolunteer(data: Omit<Volunteer, "id" | "createdAt" | "upda
   return volunteer;
 }
 
-export function updateVolunteer(id: number, data: Partial<Volunteer>): Volunteer | null {
+export async function updateVolunteer(id: number, data: Partial<Volunteer>): Promise<Volunteer | null> {
+  if (isNeonConfigured()) {
+    return neonUpdateVolunteer(id, data);
+  }
   const db = readDb();
   const index = db.volunteers.findIndex((v) => v.id === id);
   if (index === -1) return null;
   db.volunteers[index] = {
     ...db.volunteers[index],
     ...data,
-    id, // ensure id doesn't change
+    id,
     updatedAt: new Date().toISOString(),
   };
   writeDb(db);
   return db.volunteers[index];
 }
 
-export function deleteVolunteer(id: number): boolean {
+export async function deleteVolunteer(id: number): Promise<boolean> {
+  if (isNeonConfigured()) {
+    return neonDeleteVolunteer(id);
+  }
   const db = readDb();
   const initialLength = db.volunteers.length;
   db.volunteers = db.volunteers.filter((v) => v.id !== id);
-  // Also delete associated experiences
   db.experiences = db.experiences.filter((e) => e.volunteerId !== id);
   writeDb(db);
   return db.volunteers.length < initialLength;
 }
 
-export function searchVolunteers(params: {
+export async function searchVolunteers(params: {
   search?: string;
   location?: string;
   skill?: string;
   minExperience?: number;
   verified?: boolean;
   availability?: string;
-}): Volunteer[] {
-  let volunteers = getAllVolunteers();
+}): Promise<Volunteer[]> {
+  if (isNeonConfigured()) {
+    return neonSearchVolunteers(params);
+  }
+  let volunteers = await getAllVolunteers();
 
   if (params.search) {
     const search = params.search.toLowerCase();
@@ -218,12 +259,18 @@ export function searchVolunteers(params: {
 
 // ============== EXPERIENCES ==============
 
-export function getExperiencesByVolunteerId(volunteerId: number): Experience[] {
+export async function getExperiencesByVolunteerId(volunteerId: number): Promise<Experience[]> {
+  if (isNeonConfigured()) {
+    return neonGetExperiencesByVolunteerId(volunteerId);
+  }
   const db = readDb();
   return db.experiences.filter((e) => e.volunteerId === volunteerId);
 }
 
-export function createExperience(data: Omit<Experience, "id">): Experience {
+export async function createExperience(data: Omit<Experience, "id">): Promise<Experience> {
+  if (isNeonConfigured()) {
+    return neonCreateExperience(data);
+  }
   const db = readDb();
   const experience: Experience = {
     ...data,
@@ -234,7 +281,10 @@ export function createExperience(data: Omit<Experience, "id">): Experience {
   return experience;
 }
 
-export function updateExperience(id: number, data: Partial<Experience>): Experience | null {
+export async function updateExperience(id: number, data: Partial<Experience>): Promise<Experience | null> {
+  if (isNeonConfigured()) {
+    return neonUpdateExperience(id, data);
+  }
   const db = readDb();
   const index = db.experiences.findIndex((e) => e.id === id);
   if (index === -1) return null;
@@ -247,7 +297,10 @@ export function updateExperience(id: number, data: Partial<Experience>): Experie
   return db.experiences[index];
 }
 
-export function deleteExperience(id: number): boolean {
+export async function deleteExperience(id: number): Promise<boolean> {
+  if (isNeonConfigured()) {
+    return neonDeleteExperience(id);
+  }
   const db = readDb();
   const initialLength = db.experiences.length;
   db.experiences = db.experiences.filter((e) => e.id !== id);
@@ -257,17 +310,26 @@ export function deleteExperience(id: number): boolean {
 
 // ============== COMPANY REQUESTS ==============
 
-export function getAllRequests(): CompanyRequest[] {
+export async function getAllRequests(): Promise<CompanyRequest[]> {
+  if (isNeonConfigured()) {
+    return neonGetAllRequests();
+  }
   const db = readDb();
   return db.companyRequests;
 }
 
-export function getRequestById(id: number): CompanyRequest | undefined {
+export async function getRequestById(id: number): Promise<CompanyRequest | undefined> {
+  if (isNeonConfigured()) {
+    return neonGetRequestById(id);
+  }
   const db = readDb();
   return db.companyRequests.find((r) => r.id === id);
 }
 
-export function createRequest(data: Omit<CompanyRequest, "id" | "createdAt" | "status">): CompanyRequest {
+export async function createRequest(data: Omit<CompanyRequest, "id" | "createdAt" | "status">): Promise<CompanyRequest> {
+  if (isNeonConfigured()) {
+    return neonCreateRequest(data);
+  }
   const db = readDb();
   const request: CompanyRequest = {
     ...data,
@@ -280,7 +342,10 @@ export function createRequest(data: Omit<CompanyRequest, "id" | "createdAt" | "s
   return request;
 }
 
-export function updateRequestStatus(id: number, status: CompanyRequest["status"]): CompanyRequest | null {
+export async function updateRequestStatus(id: number, status: CompanyRequest["status"]): Promise<CompanyRequest | null> {
+  if (isNeonConfigured()) {
+    return neonUpdateRequestStatus(id, status);
+  }
   const db = readDb();
   const index = db.companyRequests.findIndex((r) => r.id === id);
   if (index === -1) return null;
@@ -289,7 +354,10 @@ export function updateRequestStatus(id: number, status: CompanyRequest["status"]
   return db.companyRequests[index];
 }
 
-export function deleteRequest(id: number): boolean {
+export async function deleteRequest(id: number): Promise<boolean> {
+  if (isNeonConfigured()) {
+    return neonDeleteRequest(id);
+  }
   const db = readDb();
   const initialLength = db.companyRequests.length;
   db.companyRequests = db.companyRequests.filter((r) => r.id !== id);
@@ -299,7 +367,10 @@ export function deleteRequest(id: number): boolean {
 
 // ============== STATS ==============
 
-export function getStats() {
+export async function getStats() {
+  if (isNeonConfigured()) {
+    return neonGetStats();
+  }
   const db = readDb();
   return {
     totalVolunteers: db.volunteers.length,
@@ -312,17 +383,26 @@ export function getStats() {
 
 // ============== UPCOMING EVENTS ==============
 
-export function getAllUpcomingEvents(): UpcomingEvent[] {
+export async function getAllUpcomingEvents(): Promise<UpcomingEvent[]> {
+  if (isNeonConfigured()) {
+    return neonGetAllUpcomingEvents();
+  }
   const db = readDb();
   return db.upcomingEvents || [];
 }
 
-export function getUpcomingEventById(id: number): UpcomingEvent | undefined {
+export async function getUpcomingEventById(id: number): Promise<UpcomingEvent | undefined> {
+  if (isNeonConfigured()) {
+    return neonGetUpcomingEventById(id);
+  }
   const db = readDb();
   return (db.upcomingEvents || []).find((e) => e.id === id);
 }
 
-export function createUpcomingEvent(data: Omit<UpcomingEvent, "id">): UpcomingEvent {
+export async function createUpcomingEvent(data: Omit<UpcomingEvent, "id">): Promise<UpcomingEvent> {
+  if (isNeonConfigured()) {
+    return neonCreateUpcomingEvent(data);
+  }
   const db = readDb();
   if (!db.upcomingEvents) db.upcomingEvents = [];
   if (!db.nextIds.upcomingEvents) db.nextIds.upcomingEvents = 1;
@@ -336,7 +416,10 @@ export function createUpcomingEvent(data: Omit<UpcomingEvent, "id">): UpcomingEv
   return newEvent;
 }
 
-export function updateUpcomingEvent(id: number, data: Partial<Omit<UpcomingEvent, "id">>): UpcomingEvent | null {
+export async function updateUpcomingEvent(id: number, data: Partial<Omit<UpcomingEvent, "id">>): Promise<UpcomingEvent | null> {
+  if (isNeonConfigured()) {
+    return neonUpdateUpcomingEvent(id, data);
+  }
   const db = readDb();
   if (!db.upcomingEvents) return null;
   const index = db.upcomingEvents.findIndex((e) => e.id === id);
@@ -350,7 +433,10 @@ export function updateUpcomingEvent(id: number, data: Partial<Omit<UpcomingEvent
   return db.upcomingEvents[index];
 }
 
-export function deleteUpcomingEvent(id: number): boolean {
+export async function deleteUpcomingEvent(id: number): Promise<boolean> {
+  if (isNeonConfigured()) {
+    return neonDeleteUpcomingEvent(id);
+  }
   const db = readDb();
   if (!db.upcomingEvents) return false;
   const initialLength = db.upcomingEvents.length;
@@ -358,5 +444,6 @@ export function deleteUpcomingEvent(id: number): boolean {
   writeDb(db);
   return db.upcomingEvents.length < initialLength;
 }
+
 
 

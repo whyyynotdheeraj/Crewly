@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     const verified =
       verifiedStr === "true" ? true : verifiedStr === "false" ? false : undefined;
 
-    const volunteers = searchVolunteers({
+    const volunteers = await searchVolunteers({
       search,
       location,
       skill,
@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
     // Default to verified=true if not explicitly false (allowing registered volunteers to show their verified badge)
     const isVerified = data.verified !== undefined ? Boolean(data.verified) : true;
 
-    const volunteer = createVolunteer({
+    const volunteer = await createVolunteer({
       name: data.name.trim(),
       phone: data.phone || "",
       email: data.email || "",
@@ -73,7 +73,7 @@ export async function POST(request: NextRequest) {
     if (Array.isArray(data.experiences) && data.experiences.length > 0) {
       for (const exp of data.experiences) {
         if (exp.eventName && exp.eventName.trim()) {
-          const newExp = createExperience({
+          const newExp = await createExperience({
             volunteerId: volunteer.id,
             eventName: exp.eventName.trim(),
             eventType: exp.eventType || "Event",

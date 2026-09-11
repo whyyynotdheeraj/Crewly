@@ -11,7 +11,7 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const event = getUpcomingEventById(Number(id));
+    const event = await getUpcomingEventById(Number(id));
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -43,7 +43,7 @@ export async function PUT(
       body.appliedCount = Number(body.appliedCount);
     }
 
-    const updated = updateUpcomingEvent(Number(id), body);
+    const updated = await updateUpcomingEvent(Number(id), body);
     if (!updated) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
@@ -63,7 +63,7 @@ export async function DELETE(
 ) {
   try {
     const { id } = await params;
-    const success = deleteUpcomingEvent(Number(id));
+    const success = await deleteUpcomingEvent(Number(id));
     if (!success) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 });
     }
