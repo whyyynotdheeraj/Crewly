@@ -213,7 +213,7 @@ export async function neonUpdateVolunteer(id: number, data: Partial<Volunteer>):
       events_completed = ${merged.eventsCompleted || 0},
       skills = ${JSON.stringify(merged.skills || [])},
       availability = ${merged.availability || 'available'},
-      verified = ${merged.verified || false},
+      verified = ${Boolean(merged.verified)},
       profile_image = ${merged.profileImage || null},
       updated_at = NOW()
     WHERE id = ${id}
