@@ -6,7 +6,6 @@ import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import SkillTag from '@/components/SkillTag';
-import ExperienceCard from '@/components/ExperienceCard';
 import ImageGallery from '@/components/ImageGallery';
 import { getInitials, generateAvatarColor } from '@/lib/utils';
 import { VOLUNTEERS_UNLOCK_THRESHOLD } from '@/lib/config';
@@ -56,14 +55,10 @@ const POPULAR_SKILLS = [
   'Logistics & Runner',
 ];
 
-interface ExperienceItem {
-  id?: string | number;
+interface ExperienceTableRow {
   eventName: string;
-  eventType: string;
   role: string;
-  year: number | string;
-  description: string;
-  images: string[];
+  place: string;
 }
 
 export default function VolunteerProfilePage() {
@@ -79,7 +74,6 @@ export default function VolunteerProfilePage() {
 
   // Edit Modal State
   const [isEditing, setIsEditing] = useState(false);
-  const [activeTab, setActiveTab] = useState<'profile' | 'experiences'>('profile');
   const [isSaving, setIsSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -96,12 +90,21 @@ export default function VolunteerProfilePage() {
     availability: 'available',
     skills: [] as string[],
     profileImage: '',
-    experiences: [] as ExperienceItem[],
   });
+
+  // Simple Table Format for Past Events
+  const [experienceRows, setExperienceRows] = useState<ExperienceTableRow[]>([
+    { eventName: '', role: '', place: '' },
+  ]);
+
+  // Unified Event Photos (All experience photos in one place)
+  const [eventPhotos, setEventPhotos] = useState<string[]>([]);
 
   const [customSkillInput, setCustomSkillInput] = useState('');
   const profileFileInputRef = useRef<HTMLInputElement>(null);
+  const eventPhotosInputRef = useRef<HTMLInputElement>(null);
   const [uploadingProfilePic, setUploadingProfilePic] = useState(false);
+  const [uploadingEventPhotos, setUploadingEventPhotos] = useState(false);
 
   const fetchVolunteer = async () => {
     try {
@@ -179,18 +182,31 @@ export default function VolunteerProfilePage() {
         availability: volunteer.availability || (volunteer.available !== false ? 'available' : 'unavailable'),
         skills: Array.isArray(volunteer.skills) ? [...volunteer.skills] : [],
         profileImage: volunteer.profileImage || '',
-        experiences: Array.isArray(volunteer.experiences)
-          ? volunteer.experiences.map((exp: any) => ({
-              id: exp.id || `exp-${Date.now()}-${Math.random()}`,
-              eventName: exp.eventName || '',
-              eventType: exp.eventType || 'Festival',
-              role: exp.role || 'Volunteer',
-              year: exp.year || new Date().getFullYear(),
-              description: exp.description || '',
-              images: Array.isArray(exp.images) ? [...exp.images] : exp.imageUrl ? [exp.imageUrl] : [],
-            }))
-          : [],
       });
+
+      // Populate Table Rows from experiences
+      const exps = Array.isArray(volunteer.experiences) ? volunteer.experiences : [];
+      const rows: ExperienceTableRow[] = exps
+        .filter((exp: any) => exp.eventName && exp.eventName !== 'Past Events & Experience')
+        .map((exp: any) => ({
+          eventName: exp.eventName || '',
+          role: exp.role || '',
+          place: exp.description || exp.eventType || '',
+        }));
+
+      setExperienceRows(rows.length > 0 ? rows : [{ eventName: '', role: '', place: '' }]);
+
+      // Populate All Event Photos together
+      const photos: string[] = [];
+      for (const exp of exps) {
+        const imgs = Array.isArray(exp.images) ? exp.images : exp.imageUrl ? [exp.imageUrl] : [];
+        for (const img of imgs) {
+          if (typeof img === 'string' && img && !photos.includes(img)) {
+            photos.push(img);
+          }
+        }
+      }
+      setEventPhotos(photos);
     }
   }, [volunteer]);
 
@@ -199,7 +215,7 @@ export default function VolunteerProfilePage() {
     if (!e.target.files || !e.target.files[0]) return;
     const file = e.target.files[0];
     if (!file.type.startsWith('image/')) {
-      alert('Please select an image file (JPG, PNG, WebP)');
+      alert('Please select an image file');
       return;
     }
     setUploadingProfilePic(true);
@@ -207,7 +223,7 @@ export default function VolunteerProfilePage() {
       const dataUrl = await compressImageToBase64(file, 800, 0.82);
       setEditForm((prev) => ({ ...prev, profileImage: dataUrl }));
     } catch {
-      alert('Failed to process image. Please try another photo.');
+      alert('Failed to process image');
     } finally {
       setUploadingProfilePic(false);
     }
@@ -230,60 +246,54 @@ export default function VolunteerProfilePage() {
     }));
   };
 
-  // Experience handlers
-  const handleAddExperience = () => {
-    setEditForm((prev) => ({
-      ...prev,
-      experiences: [
-        ...prev.experiences,
-        {
-          id: `new-${Date.now()}`,
-          eventName: '',
-          eventType: 'Festival',
-          role: 'Event Volunteer',
-          year: new Date().getFullYear(),
-          description: '',
-          images: [],
-        },
-      ],
-    }));
+  // Table Row Handlers
+  const handleAddRow = () => {
+    setExperienceRows((prev) => [...prev, { eventName: '', role: '', place: '' }]);
   };
 
-  const handleUpdateExperience = (index: number, field: keyof ExperienceItem, value: any) => {
-    setEditForm((prev) => {
-      const updated = [...prev.experiences];
+  const handleUpdateRow = (index: number, field: keyof ExperienceTableRow, value: string) => {
+    setExperienceRows((prev) => {
+      const updated = [...prev];
       updated[index] = { ...updated[index], [field]: value };
-      return { ...prev, experiences: updated };
+      return updated;
     });
   };
 
-  const handleRemoveExperience = (index: number) => {
-    setEditForm((prev) => ({
-      ...prev,
-      experiences: prev.experiences.filter((_, i) => i !== index),
-    }));
+  const handleRemoveRow = (index: number) => {
+    setExperienceRows((prev) => {
+      const filtered = prev.filter((_, i) => i !== index);
+      return filtered.length > 0 ? filtered : [{ eventName: '', role: '', place: '' }];
+    });
   };
 
-  const handleAddExperiencePhoto = async (index: number, file: File) => {
+  // Unified Event Photos Handlers
+  const handleAddEventPhotos = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const files = Array.from(e.target.files);
+    setUploadingEventPhotos(true);
     try {
-      const dataUrl = await compressImageToBase64(file, 1000, 0.82);
-      setEditForm((prev) => {
-        const updated = [...prev.experiences];
-        const existingImages = updated[index].images || [];
-        updated[index] = { ...updated[index], images: [...existingImages, dataUrl] };
-        return { ...prev, experiences: updated };
-      });
+      const newPhotos: string[] = [];
+      for (const file of files) {
+        if (file.type.startsWith('image/')) {
+          const compressed = await compressImageToBase64(file, 1000, 0.82);
+          newPhotos.push(compressed);
+        }
+      }
+      if (newPhotos.length > 0) {
+        setEventPhotos((prev) => [...prev, ...newPhotos]);
+      }
     } catch {
-      alert('Could not process photo');
+      alert('Could not process some photos');
+    } finally {
+      setUploadingEventPhotos(false);
+      if (eventPhotosInputRef.current) {
+        eventPhotosInputRef.current.value = '';
+      }
     }
   };
 
-  const handleRemoveExperiencePhoto = (expIndex: number, photoIndex: number) => {
-    setEditForm((prev) => {
-      const updated = [...prev.experiences];
-      updated[expIndex].images = updated[expIndex].images.filter((_, i) => i !== photoIndex);
-      return { ...prev, experiences: updated };
-    });
+  const handleRemoveEventPhoto = (index: number) => {
+    setEventPhotos((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Save to Database
@@ -292,11 +302,50 @@ export default function VolunteerProfilePage() {
     setIsSaving(true);
     setSaveMessage(null);
 
+    // Prepare experiences payload from the table rows
+    const validRows = experienceRows.filter((r) => r.eventName.trim());
+    let experiencesPayload: any[] = validRows.map((r, idx) => ({
+      eventName: r.eventName.trim(),
+      role: r.role.trim() || 'Volunteer',
+      description: r.place.trim() || '',
+      eventType: r.place.trim() || 'Event',
+      year: new Date().getFullYear(),
+      images: idx === 0 ? eventPhotos : [],
+    }));
+
+    // If no specific event was named but photos were uploaded, preserve them in a portfolio experience
+    if (experiencesPayload.length === 0 && eventPhotos.length > 0) {
+      experiencesPayload = [
+        {
+          eventName: 'Past Events & Experience',
+          role: 'Volunteer',
+          description: '',
+          eventType: 'Event',
+          year: new Date().getFullYear(),
+          images: eventPhotos,
+        },
+      ];
+    }
+
+    const payload = {
+      name: editForm.name,
+      phone: editForm.phone,
+      location: editForm.location,
+      age: editForm.age ? Number(editForm.age) : undefined,
+      bio: editForm.bio,
+      yearsExperience: Number(editForm.yearsExperience) || 0,
+      eventsCompleted: Number(editForm.eventsCompleted) || 0,
+      availability: editForm.availability,
+      skills: editForm.skills,
+      profileImage: editForm.profileImage,
+      experiences: experiencesPayload,
+    };
+
     try {
       const res = await fetch(`/api/volunteers/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
 
       if (res.ok) {
@@ -304,12 +353,12 @@ export default function VolunteerProfilePage() {
         setVolunteer(updatedVolunteer);
         setSaveMessage({
           type: 'success',
-          text: 'Profile & experiences updated successfully in Database!',
+          text: 'Profile and experiences updated successfully!',
         });
         setTimeout(() => {
           setIsEditing(false);
           setSaveMessage(null);
-        }, 1500);
+        }, 1200);
       } else {
         const errData = await res.json();
         setSaveMessage({
@@ -353,77 +402,13 @@ export default function VolunteerProfilePage() {
     );
   }
 
-  if (isLocked) {
-    return (
-      <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
-        <Navbar />
-        <main className="flex-1 max-w-2xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              type="button"
-              onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
-              className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
-            >
-              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-              </svg>
-              <span>Back</span>
-            </button>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2 rounded-xl border border-slate-200 shadow-xs transition-all"
-            >
-              <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-              </svg>
-              <span>Home</span>
-            </Link>
-          </div>
-
-          <div className="bg-white rounded-[2.5rem] p-8 sm:p-12 border border-indigo-100 shadow-3d-xl text-center space-y-6 w-full">
-            <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-200 text-indigo-600 flex items-center justify-center mx-auto shadow-sm">
-              <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-
-            <div className="space-y-2">
-              <span className="text-xs font-black uppercase tracking-widest text-indigo-600 bg-indigo-50 px-3.5 py-1 rounded-full border border-indigo-100">
-                Founding Batch
-              </span>
-              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
-                Profile Unlocking Soon
-              </h1>
-              <p className="text-slate-600 text-sm sm:text-base leading-relaxed">
-                Individual volunteer profiles and portfolios are currently reserved and will be unlocked for public viewing once we hit 100 registered volunteers.
-              </p>
-            </div>
-
-            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-              <Link
-                href="/join"
-                className="px-8 py-3.5 rounded-xl btn-premium-gradient text-white font-bold text-sm shadow-md flex items-center justify-center gap-2"
-              >
-                <span>Join as a Volunteer</span>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-                </svg>
-              </Link>
-            </div>
-          </div>
-        </main>
-        <Footer />
-      </div>
-    );
-  }
-
   if (error || !volunteer) {
     return (
       <div className="min-h-screen flex flex-col bg-[#f8fafc]">
         <Navbar />
         <main className="flex-1 flex flex-col items-center justify-center py-20 px-4">
           <h1 className="text-3xl font-black text-slate-900 mb-3">Volunteer Not Found</h1>
-          <p className="text-slate-500 mb-8">The profile you are looking for doesn't exist or has been removed.</p>
+          <p className="text-slate-500 mb-8">The profile you are looking for doesn&apos;t exist or has been removed.</p>
           <Link href="/join" className="btn-premium-gradient px-8 py-3.5 rounded-2xl font-bold shadow-xl">
             Join as a Volunteer
           </Link>
@@ -442,7 +427,9 @@ export default function VolunteerProfilePage() {
           if (typeof img === 'string' && img) {
             allImages.push({
               url: img,
-              caption: `${exp.eventName} — ${exp.role || 'Volunteer'} (${exp.year || ''})`,
+              caption: exp.eventName && exp.eventName !== 'Past Events & Experience' 
+                ? `${exp.eventName} — ${exp.role || 'Volunteer'}` 
+                : 'Event Experience Photo',
             });
           } else if (img && typeof img.url === 'string') {
             allImages.push(img);
@@ -457,6 +444,10 @@ export default function VolunteerProfilePage() {
       ? volunteer.availability === 'available'
       : volunteer.available !== false;
 
+  const validExperiences = (volunteer.experiences || []).filter(
+    (exp: any) => exp.eventName && exp.eventName !== 'Past Events & Experience'
+  );
+
   return (
     <div className="min-h-screen flex flex-col bg-[#f8fafc] text-slate-900">
       <Navbar />
@@ -469,11 +460,11 @@ export default function VolunteerProfilePage() {
         {/* Top Profile Header Section */}
         <section className="bg-white/80 backdrop-blur-xl py-12 border-b border-slate-200/80 shadow-sm">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            {/* Navigation Actions (Back & Home) */}
+            {/* Navigation Actions */}
             <div className="flex items-center justify-between mb-6">
               <button
                 type="button"
-                onClick={() => window.history.length > 1 ? window.history.back() : window.location.href = '/'}
+                onClick={() => (window.history.length > 1 ? window.history.back() : (window.location.href = '/'))}
                 className="inline-flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-indigo-600 bg-white hover:bg-slate-50 px-4 py-2.5 rounded-xl border border-slate-200 shadow-xs transition-all active:scale-[0.98] cursor-pointer"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -482,16 +473,17 @@ export default function VolunteerProfilePage() {
                 <span>Back</span>
               </button>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 {canEdit && (
                   <button
+                    type="button"
                     onClick={() => setIsEditing(true)}
-                    className="inline-flex items-center gap-2 px-4 py-2.5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs font-bold text-white bg-blue-600 hover:bg-blue-700 px-4 py-2.5 rounded-xl shadow-xs transition-all cursor-pointer"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                     </svg>
-                    <span>Edit Profile & Experiences</span>
+                    <span>Edit Profile</span>
                   </button>
                 )}
 
@@ -509,9 +501,9 @@ export default function VolunteerProfilePage() {
 
             {/* Owner Management Notification Banner */}
             {canEdit && (
-              <div className="mb-8 p-4 rounded-2xl bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 border border-blue-200 text-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-sm">
+              <div className="mb-8 p-4 rounded-2xl bg-blue-50/70 border border-blue-200 text-slate-900 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs flex-shrink-0">
+                  <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center shadow-xs flex-shrink-0">
                     <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                     </svg>
@@ -519,14 +511,14 @@ export default function VolunteerProfilePage() {
                   <div>
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-bold text-slate-900">
-                        {isAdmin ? 'Admin View: Editing Mode Available' : 'Your Volunteer Profile'}
+                        {isAdmin ? 'Admin View: Editing Mode' : 'Your Volunteer Profile'}
                       </p>
-                      <span className="text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
+                      <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-md bg-emerald-100 text-emerald-800">
                         Database Connected
                       </span>
                     </div>
                     <p className="text-xs text-slate-600 mt-0.5">
-                      You can update your personal details, phone, bio, and add photos of past events anytime.
+                      You can update your personal details, past events, and photos anytime.
                     </p>
                   </div>
                 </div>
@@ -534,7 +526,7 @@ export default function VolunteerProfilePage() {
                 <button
                   type="button"
                   onClick={() => setIsEditing(true)}
-                  className="text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-sm flex items-center gap-1.5 transition-all self-end sm:self-center cursor-pointer"
+                  className="text-xs font-bold px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-xs flex items-center gap-1.5 transition-all self-end sm:self-center cursor-pointer"
                 >
                   <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
@@ -545,7 +537,7 @@ export default function VolunteerProfilePage() {
             )}
 
             <div className="flex flex-col md:flex-row gap-8 items-center md:items-start">
-              {/* Photo with Edit Badge */}
+              {/* Photo */}
               <div className="flex-shrink-0 relative group">
                 {volunteer.profileImage ? (
                   <img
@@ -599,129 +591,177 @@ export default function VolunteerProfilePage() {
                   )}
                 </div>
 
-                <p className="text-base font-semibold text-slate-500 flex items-center justify-center md:justify-start gap-1.5">
-                  <svg className="w-4 h-4 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                  </svg>
-                  <span>{volunteer.location || 'Location not specified'}</span>
-                </p>
-                
-                {/* 3D Stat Badges */}
-                <div className="flex flex-wrap gap-2.5 justify-center md:justify-start pt-2">
-                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Experience</span>
-                    <span className="font-black text-slate-900">{volunteer.yearsExperience || 0}+ Years</span>
-                  </div>
-
-                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Events Completed</span>
-                    <span className="font-black text-indigo-600">{volunteer.eventsCompleted || 0} Events</span>
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-4 text-sm font-semibold text-slate-600">
+                  <div className="flex items-center gap-1.5">
+                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span>{volunteer.location}</span>
                   </div>
 
                   {volunteer.age && (
-                    <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase">Age</span>
-                      <span className="font-black text-slate-900">{volunteer.age} Yrs</span>
+                    <div className="flex items-center gap-1.5">
+                      <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      <span>{volunteer.age} yrs</span>
                     </div>
                   )}
 
-                  <div className="bg-slate-50 border border-slate-200 px-4 py-2 rounded-2xl shadow-xs flex flex-col">
-                    <span className="text-[10px] text-slate-400 font-bold uppercase">Status</span>
-                    <span className={`font-black text-xs mt-0.5 flex items-center gap-1.5 ${isAvailable ? 'text-emerald-600' : 'text-slate-500'}`}>
-                      <span className={`w-2 h-2 rounded-full ${isAvailable ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
-                      {isAvailable ? 'Available Now' : 'Busy'}
+                  {/* Availability Badge */}
+                  <div className="flex items-center gap-1.5">
+                    <span className={`w-2.5 h-2.5 rounded-full ${isAvailable ? 'bg-emerald-500' : 'bg-amber-500'}`}></span>
+                    <span className={isAvailable ? 'text-emerald-700 font-bold' : 'text-amber-700 font-bold'}>
+                      {isAvailable ? 'Available for Gigs' : 'Currently Busy'}
                     </span>
                   </div>
+                </div>
+
+                {/* Experience & Gigs Counters */}
+                <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 pt-2">
+                  <div className="bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-2xl flex items-center gap-2">
+                    <span className="text-xl font-black text-blue-600">{volunteer.yearsExperience || 0}</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Years Exp</span>
+                  </div>
+                  <div className="bg-slate-50 border border-slate-200/80 px-4 py-2 rounded-2xl flex items-center gap-2">
+                    <span className="text-xl font-black text-indigo-600">{volunteer.eventsCompleted || 0}</span>
+                    <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Gigs Done</span>
+                  </div>
+                </div>
+
+                {/* Direct Phone / Contact Badge */}
+                <div className="pt-2">
+                  {isLocked ? (
+                    <div className="inline-flex items-center gap-2 px-4 py-2.5 bg-amber-50 border border-amber-200 rounded-2xl text-xs text-amber-900 font-bold">
+                      <svg className="w-4 h-4 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                      </svg>
+                      <span>Phone hidden until {VOLUNTEERS_UNLOCK_THRESHOLD} volunteers join</span>
+                    </div>
+                  ) : (
+                    <a
+                      href={`tel:${volunteer.phone}`}
+                      className="inline-flex items-center gap-2 px-5 py-2.5 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-bold text-xs shadow-md transition-all active:scale-95"
+                    >
+                      <svg className="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                      </svg>
+                      <span>Call: {volunteer.phone}</span>
+                    </a>
+                  )}
                 </div>
               </div>
             </div>
           </div>
         </section>
 
-        {/* Profile Content */}
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-12">
-          
-          {/* About */}
-          <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm relative">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-bold text-slate-900">About {volunteer.name}</h2>
+        {/* Profile Content Body */}
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+          {/* About / Bio */}
+          {volunteer.bio && (
+            <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">About</h2>
+              <p className="text-slate-600 leading-relaxed font-normal text-base whitespace-pre-line">
+                {volunteer.bio}
+              </p>
+            </section>
+          )}
+
+          {/* Skills */}
+          {volunteer.skills && volunteer.skills.length > 0 && (
+            <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+              <h2 className="text-xl font-bold text-slate-900 mb-4">Skills & Specialties</h2>
+              <div className="flex flex-wrap gap-2">
+                {volunteer.skills.map((skill: string, index: number) => (
+                  <SkillTag key={index} skill={skill} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Past Event Experience (Clean Table Format) */}
+          <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-xl font-bold text-slate-900">Past Events Experience</h2>
+                <p className="text-xs text-slate-500 mt-0.5">Events and gigs handled</p>
+              </div>
               {canEdit && (
                 <button
                   onClick={() => setIsEditing(true)}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                  className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
                 >
-                  Edit Bio
+                  <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                  </svg>
+                  <span>Edit Experience</span>
                 </button>
               )}
             </div>
-            <div className="text-slate-600 leading-relaxed text-sm sm:text-base">
-              {volunteer.bio ? (
-                <p className="whitespace-pre-wrap">{volunteer.bio}</p>
-              ) : (
-                <p className="text-slate-400 italic">No biography provided yet. Click 'Edit Profile' to add your bio.</p>
-              )}
-            </div>
 
-            {/* Skills */}
-            <div className="mt-6 pt-6 border-t border-slate-100">
-              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-3">Core Skills</h3>
-              <div className="flex flex-wrap gap-2">
-                {volunteer.skills && volunteer.skills.length > 0 ? (
-                  volunteer.skills.map((skill: string, index: number) => (
-                    <SkillTag key={index} skill={skill} />
-                  ))
-                ) : (
-                  <span className="text-slate-400 text-sm">No skills listed yet.</span>
-                )}
-              </div>
-            </div>
-          </section>
-
-          {/* Event Experience Cards */}
-          <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-slate-900">Verified Past Events Experience</h2>
-              {canEdit && (
-                <button
-                  onClick={() => {
-                    setActiveTab('experiences');
-                    setIsEditing(true);
-                  }}
-                  className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg flex items-center gap-1 transition-colors"
-                >
-                  + Add / Edit Gigs
-                </button>
-              )}
-            </div>
-            {volunteer.experiences && volunteer.experiences.length > 0 ? (
-              <div className="space-y-6">
-                {volunteer.experiences.map((exp: any) => (
-                  <ExperienceCard key={exp.id || Math.random()} experience={exp} />
-                ))}
+            {validExperiences.length > 0 ? (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-sm border-collapse">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase font-bold tracking-wider">
+                      <th className="py-3 px-4">Event Name</th>
+                      <th className="py-3 px-4">Role</th>
+                      <th className="py-3 px-4">Place / Location</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {validExperiences.map((exp: any, idx: number) => (
+                      <tr key={exp.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-3.5 px-4 font-bold text-slate-900">{exp.eventName}</td>
+                        <td className="py-3.5 px-4 text-slate-700">
+                          <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold">
+                            {exp.role}
+                          </span>
+                        </td>
+                        <td className="py-3.5 px-4 text-slate-600 font-medium">
+                          {exp.description || exp.eventType || '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             ) : (
               <div className="bg-slate-50 rounded-2xl p-8 text-center border border-slate-200 space-y-3">
-                <p className="text-slate-500 text-sm">No specific event records logged yet.</p>
+                <p className="text-slate-500 text-sm font-medium">No past event records added yet.</p>
                 {canEdit && (
                   <button
-                    onClick={() => {
-                      setActiveTab('experiences');
-                      setIsEditing(true);
-                    }}
-                    className="text-xs font-bold text-blue-600 hover:underline"
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs font-bold text-blue-600 hover:underline cursor-pointer"
                   >
-                    + Add your first past event experience with photos
+                    + Add your past events & experience
                   </button>
                 )}
               </div>
             )}
           </section>
 
-          {/* Photos Gallery */}
+          {/* On-Ground Event Photos Gallery */}
           {allImages.length > 0 && (
             <section className="bg-white rounded-[2rem] p-8 border border-slate-200/80 shadow-sm">
-              <h2 className="text-xl font-bold text-slate-900 mb-6">On-Ground Event Photos</h2>
+              <div className="flex items-center justify-between mb-6">
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900">Event Photos</h2>
+                  <p className="text-xs text-slate-500 mt-0.5">{allImages.length} photos uploaded</p>
+                </div>
+                {canEdit && (
+                  <button
+                    onClick={() => setIsEditing(true)}
+                    className="text-xs font-bold px-3 py-1.5 bg-blue-50 text-blue-700 hover:bg-blue-100 rounded-lg flex items-center gap-1 transition-colors cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add / Manage Photos</span>
+                  </button>
+                )}
+              </div>
               <ImageGallery images={allImages} />
             </section>
           )}
@@ -743,511 +783,433 @@ export default function VolunteerProfilePage() {
               </Link>
             </div>
           </section>
-
         </div>
       </main>
 
       {/* =========================================================================
-          DIRECT EDIT PROFILE & EXPERIENCES MODAL WINDOW
+          DIRECT EDIT PROFILE & EXPERIENCES MODAL WINDOW (SIMPLIFIED & UNIFIED)
       ========================================================================== */}
       {isEditing && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/60 backdrop-blur-xs animate-in fade-in">
-          <div className="bg-white rounded-3xl max-w-2xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden relative">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col shadow-2xl border border-gray-100 overflow-hidden relative">
             
-            {/* Modal Top Header */}
-            <div className="p-5 sm:p-6 border-b border-gray-100 flex items-center justify-between bg-slate-50/70">
+            {/* Modal Header */}
+            <div className="p-5 sm:p-6 border-b border-gray-200 flex items-center justify-between bg-slate-50">
               <div>
-                <h2 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-                  <span>Edit Profile & Experience</span>
+                <h2 className="text-lg sm:text-xl font-bold text-slate-900">
+                  Edit Profile & Experience
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Update your volunteer details & past gigs directly in the database
+                  Update your details, past events, and photos directly in the database
                 </p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsEditing(false)}
-                className="w-9 h-9 rounded-full bg-white hover:bg-gray-200 border border-gray-200 text-gray-500 font-bold flex items-center justify-center transition-colors shadow-xs"
+                className="w-8 h-8 rounded-full bg-white hover:bg-slate-200 border border-slate-200 text-slate-600 font-bold flex items-center justify-center transition-colors cursor-pointer"
+                title="Close"
               >
-                ✕
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M6 18L18 6M6 6l12 12" />
+                </svg>
               </button>
             </div>
 
-            {/* Tab Selection Navigation */}
-            <div className="flex border-b border-gray-200 bg-white px-6 pt-3">
-              <button
-                type="button"
-                onClick={() => setActiveTab('profile')}
-                className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                  activeTab === 'profile'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                <span>👤 Profile Details</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('experiences')}
-                className={`pb-3 px-4 text-sm font-bold border-b-2 transition-all flex items-center gap-2 ${
-                  activeTab === 'experiences'
-                    ? 'border-blue-600 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-800'
-                }`}
-              >
-                <span>🎪 Past Gigs & Photos ({editForm.experiences.length})</span>
-              </button>
-            </div>
-
-            {/* Form Body Scrollable Area */}
+            {/* Scrollable Single Form Body */}
             <form onSubmit={handleSaveAll} className="flex-1 overflow-y-auto p-5 sm:p-7 space-y-6">
               
               {/* Alert message if any */}
               {saveMessage && (
                 <div
-                  className={`p-4 rounded-xl text-sm font-medium flex items-center gap-2 ${
+                  className={`p-3.5 rounded-xl text-xs font-semibold flex items-center gap-2 ${
                     saveMessage.type === 'success'
                       ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                       : 'bg-red-50 text-red-800 border border-red-200'
                   }`}
                 >
-                  <span>{saveMessage.type === 'success' ? '✓' : '⚠️'}</span>
+                  <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    {saveMessage.type === 'success' ? (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                    ) : (
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    )}
+                  </svg>
                   <span>{saveMessage.text}</span>
                 </div>
               )}
 
-              {/* TAB 1: BASIC PROFILE DETAILS */}
-              {activeTab === 'profile' && (
-                <div className="space-y-6">
-                  
-                  {/* Photo Section */}
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
-                    <div className="relative w-20 h-20 rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-xs flex-shrink-0">
-                      {editForm.profileImage ? (
-                        <img
-                          src={editForm.profileImage}
-                          alt="Preview"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 text-2xl">
-                          {editForm.name ? editForm.name.charAt(0).toUpperCase() : 'V'}
-                        </div>
-                      )}
-                      {uploadingProfilePic && (
-                        <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-xs font-bold">
-                          Uploading...
-                        </div>
-                      )}
-                    </div>
+              {/* 1. PERSONAL DETAILS */}
+              <div className="space-y-4">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500 pb-1 border-b border-slate-100">
+                  Personal Details
+                </h3>
 
-                    <div className="flex-1 space-y-2 text-center sm:text-left">
-                      <p className="text-xs font-bold uppercase tracking-wider text-slate-500">Profile Photo</p>
-                      <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
-                        <input
-                          type="file"
-                          ref={profileFileInputRef}
-                          onChange={handleProfilePhotoChange}
-                          accept="image/*"
-                          className="hidden"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => profileFileInputRef.current?.click()}
-                          className="px-3.5 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold shadow-xs transition-colors"
-                        >
-                          📷 Choose from Laptop / Phone
-                        </button>
-                        {editForm.profileImage && (
-                          <button
-                            type="button"
-                            onClick={() => setEditForm((p) => ({ ...p, profileImage: '' }))}
-                            className="px-3 py-1.5 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold"
-                          >
-                            Remove
-                          </button>
-                        )}
+                {/* Profile Photo */}
+                <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 flex flex-col sm:flex-row items-center gap-4">
+                  <div className="relative w-16 h-16 rounded-2xl overflow-hidden bg-white border border-slate-200 shadow-xs flex-shrink-0">
+                    {editForm.profileImage ? (
+                      <img
+                        src={editForm.profileImage}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center font-bold text-slate-400 text-xl">
+                        {editForm.name ? editForm.name.charAt(0).toUpperCase() : 'V'}
                       </div>
-                      <input
-                        type="url"
-                        placeholder="Or paste image URL (https://...)"
-                        value={editForm.profileImage.startsWith('data:') ? '' : editForm.profileImage}
-                        onChange={(e) => setEditForm((prev) => ({ ...prev, profileImage: e.target.value }))}
-                        className="w-full px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-lg focus:outline-none focus:border-blue-500"
-                      />
-                    </div>
+                    )}
+                    {uploadingProfilePic && (
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center text-white text-[10px] font-bold">
+                        Uploading...
+                      </div>
+                    )}
                   </div>
 
-                  {/* Name & Phone */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Full Name *
-                      </label>
+                  <div className="flex-1 text-center sm:text-left space-y-1.5">
+                    <p className="text-xs font-bold text-slate-700">Profile Photo</p>
+                    <div className="flex flex-wrap gap-2 justify-center sm:justify-start items-center">
                       <input
-                        type="text"
-                        required
-                        value={editForm.name}
-                        onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                        placeholder="e.g. Rahul Sharma"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Phone Number *
-                      </label>
-                      <input
-                        type="tel"
-                        required
-                        value={editForm.phone}
-                        onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                        placeholder="e.g. 9876543210"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Location & Age */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        City / Location *
-                      </label>
-                      <input
-                        type="text"
-                        required
-                        value={editForm.location}
-                        onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
-                        placeholder="e.g. Jaipur, Rajasthan"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Age
-                      </label>
-                      <input
-                        type="number"
-                        min={16}
-                        max={80}
-                        value={editForm.age}
-                        onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
-                        placeholder="e.g. 21"
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
-                      />
-                    </div>
-                  </div>
-
-                  {/* Experience Numbers & Availability */}
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Years of Experience
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        max={30}
-                        value={editForm.yearsExperience}
-                        onChange={(e) => setEditForm({ ...editForm, yearsExperience: Number(e.target.value) || 0 })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Events Completed
-                      </label>
-                      <input
-                        type="number"
-                        min={0}
-                        value={editForm.eventsCompleted}
-                        onChange={(e) => setEditForm({ ...editForm, eventsCompleted: Number(e.target.value) || 0 })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                        Availability Status
-                      </label>
-                      <select
-                        value={editForm.availability}
-                        onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
-                        className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 font-semibold"
-                      >
-                        <option value="available">🟢 Available for Gigs</option>
-                        <option value="unavailable">🔴 Currently Busy</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {/* Skills Section */}
-                  <div>
-                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                      Skills & Specialties
-                    </label>
-                    <div className="flex flex-wrap gap-1.5 mb-2 min-h-[36px] p-2 bg-slate-50 border border-slate-200 rounded-xl">
-                      {editForm.skills.map((skill, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center gap-1 px-3 py-1 bg-indigo-50 text-indigo-700 rounded-lg text-xs font-bold border border-indigo-200"
-                        >
-                          {skill}
-                          <button
-                            type="button"
-                            onClick={() => removeSkill(skill)}
-                            className="hover:text-red-600 font-bold ml-1"
-                          >
-                            ✕
-                          </button>
-                        </span>
-                      ))}
-                      {editForm.skills.length === 0 && (
-                        <span className="text-xs text-slate-400 py-1">No skills added yet. Click suggestions below or type your own.</span>
-                      )}
-                    </div>
-
-                    {/* Quick Suggestions */}
-                    <div className="flex flex-wrap gap-1.5 mb-3">
-                      <span className="text-[10px] text-slate-400 font-bold uppercase self-center mr-1">Suggestions:</span>
-                      {POPULAR_SKILLS.filter(s => !editForm.skills.includes(s)).slice(0, 6).map((s, idx) => (
-                        <button
-                          key={idx}
-                          type="button"
-                          onClick={() => addSkill(s)}
-                          className="px-2.5 py-1 text-xs bg-white hover:bg-slate-100 border border-slate-200 text-slate-600 rounded-lg font-medium transition-colors"
-                        >
-                          + {s}
-                        </button>
-                      ))}
-                    </div>
-
-                    {/* Custom Skill Input */}
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        placeholder="Add custom skill (e.g. VIP Protocol)..."
-                        value={customSkillInput}
-                        onChange={(e) => setCustomSkillInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
-                            e.preventDefault();
-                            addSkill(customSkillInput);
-                          }
-                        }}
-                        className="flex-1 px-3 py-2 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
+                        type="file"
+                        ref={profileFileInputRef}
+                        onChange={handleProfilePhotoChange}
+                        accept="image/*"
+                        className="hidden"
                       />
                       <button
                         type="button"
-                        onClick={() => addSkill(customSkillInput)}
-                        className="px-4 py-2 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition-colors"
+                        onClick={() => profileFileInputRef.current?.click()}
+                        className="px-3 py-1.5 bg-white border border-slate-300 hover:bg-slate-100 text-slate-700 rounded-xl text-xs font-bold shadow-xs transition-colors flex items-center gap-1.5 cursor-pointer"
                       >
-                        Add Skill
+                        <svg className="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                        <span>Upload Photo</span>
                       </button>
+                      {editForm.profileImage && (
+                        <button
+                          type="button"
+                          onClick={() => setEditForm((p) => ({ ...p, profileImage: '' }))}
+                          className="px-2.5 py-1.5 text-red-600 hover:bg-red-50 rounded-xl text-xs font-bold transition-colors cursor-pointer"
+                        >
+                          Remove
+                        </button>
+                      )}
                     </div>
                   </div>
+                </div>
 
-                  {/* Bio */}
+                {/* Name & Phone */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div>
                     <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
-                      About / Bio
+                      Full Name *
                     </label>
-                    <textarea
-                      rows={4}
-                      value={editForm.bio}
-                      onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
-                      placeholder="Introduce yourself to event organizers. Mention your experience, past shows, crowd management skills, etc."
-                      className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm focus:outline-none focus:border-blue-600 focus:ring-1 focus:ring-blue-600"
+                    <input
+                      type="text"
+                      required
+                      value={editForm.name}
+                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                      placeholder="e.g. Rahul Sharma"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      Phone Number *
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      value={editForm.phone}
+                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                      placeholder="e.g. 9876543210"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
                     />
                   </div>
                 </div>
-              )}
 
-              {/* TAB 2: PAST EXPERIENCES & GIG PHOTOS */}
-              {activeTab === 'experiences' && (
-                <div className="space-y-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-sm font-bold text-slate-900">Your Past Event Experiences</h3>
-                      <p className="text-xs text-slate-500">Showcase past festivals, concerts, and gigs you volunteered for</p>
-                    </div>
+                {/* Location, Age, Availability */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      City / Location *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editForm.location}
+                      onChange={(e) => setEditForm({ ...editForm, location: e.target.value })}
+                      placeholder="e.g. Jaipur"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      Age
+                    </label>
+                    <input
+                      type="number"
+                      min={16}
+                      max={80}
+                      value={editForm.age}
+                      onChange={(e) => setEditForm({ ...editForm, age: e.target.value })}
+                      placeholder="e.g. 21"
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                      Availability Status
+                    </label>
+                    <select
+                      value={editForm.availability}
+                      onChange={(e) => setEditForm({ ...editForm, availability: e.target.value })}
+                      className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600 font-medium"
+                    >
+                      <option value="available">Available for Gigs</option>
+                      <option value="unavailable">Currently Busy</option>
+                    </select>
+                  </div>
+                </div>
+
+                {/* Skills */}
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    Skills & Specialties
+                  </label>
+                  <div className="flex flex-wrap gap-1.5 mb-2 min-h-[36px] p-2 bg-slate-50 border border-slate-200 rounded-xl">
+                    {editForm.skills.map((skill, index) => (
+                      <span
+                        key={index}
+                        className="inline-flex items-center gap-1 px-2.5 py-1 bg-white text-slate-800 rounded-lg text-xs font-semibold border border-slate-200 shadow-2xs"
+                      >
+                        {skill}
+                        <button
+                          type="button"
+                          onClick={() => removeSkill(skill)}
+                          className="text-slate-400 hover:text-red-600 font-bold ml-1 cursor-pointer"
+                        >
+                          ✕
+                        </button>
+                      </span>
+                    ))}
+                    {editForm.skills.length === 0 && (
+                      <span className="text-xs text-slate-400 py-1">No skills added yet.</span>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      placeholder="Add skill (e.g. Stage Management)..."
+                      value={customSkillInput}
+                      onChange={(e) => setCustomSkillInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          addSkill(customSkillInput);
+                        }
+                      }}
+                      className="flex-1 px-3 py-1.5 text-xs bg-white border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
+                    />
                     <button
                       type="button"
-                      onClick={handleAddExperience}
-                      className="px-3.5 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-xs transition-colors flex items-center gap-1"
+                      onClick={() => addSkill(customSkillInput)}
+                      className="px-3.5 py-1.5 bg-slate-800 text-white rounded-xl text-xs font-bold hover:bg-slate-900 transition-colors cursor-pointer"
                     >
-                      + Add New Gig
+                      Add
                     </button>
                   </div>
 
-                  {editForm.experiences.length === 0 ? (
-                    <div className="p-8 text-center bg-slate-50 border border-slate-200 rounded-2xl space-y-3">
-                      <p className="text-slate-500 text-sm font-medium">No experiences added yet.</p>
+                  {/* Suggestions */}
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {POPULAR_SKILLS.filter((s) => !editForm.skills.includes(s)).slice(0, 5).map((s, idx) => (
                       <button
+                        key={idx}
                         type="button"
-                        onClick={handleAddExperience}
-                        className="px-4 py-2 bg-blue-600 text-white text-xs font-bold rounded-xl shadow-xs"
+                        onClick={() => addSkill(s)}
+                        className="px-2 py-0.5 text-[11px] bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-md font-medium transition-colors cursor-pointer"
                       >
-                        + Add Your First Event
+                        + {s}
                       </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-5">
-                      {editForm.experiences.map((exp, idx) => (
-                        <div
-                          key={exp.id || idx}
-                          className="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs space-y-4 relative"
-                        >
-                          <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-                            <span className="text-xs font-black uppercase text-blue-600 tracking-wider">
-                              Event #{idx + 1}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => handleRemoveExperience(idx)}
-                              className="text-xs font-bold text-red-500 hover:text-red-700 flex items-center gap-1"
-                            >
-                              🗑️ Delete
-                            </button>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                            <div className="sm:col-span-2">
-                              <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                                Event / Fest Name *
-                              </label>
-                              <input
-                                type="text"
-                                required
-                                value={exp.eventName}
-                                onChange={(e) => handleUpdateExperience(idx, 'eventName', e.target.value)}
-                                placeholder="e.g. Jaipur Literature Festival"
-                                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600 font-semibold"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                                Event Type
-                              </label>
-                              <select
-                                value={exp.eventType}
-                                onChange={(e) => handleUpdateExperience(idx, 'eventType', e.target.value)}
-                                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
-                              >
-                                <option value="Festival">Festival</option>
-                                <option value="Music Concert">Music Concert</option>
-                                <option value="Standup Comedy">Standup Comedy</option>
-                                <option value="Corporate Summit">Corporate Summit</option>
-                                <option value="Sports Event">Sports Event</option>
-                                <option value="Exhibition">Exhibition</option>
-                                <option value="College Fest">College Fest</option>
-                              </select>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                                Your Role
-                              </label>
-                              <input
-                                type="text"
-                                value={exp.role}
-                                onChange={(e) => handleUpdateExperience(idx, 'role', e.target.value)}
-                                placeholder="e.g. Crowd Management Lead"
-                                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
-                              />
-                            </div>
-
-                            <div>
-                              <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                                Year
-                              </label>
-                              <input
-                                type="number"
-                                min={2018}
-                                max={2030}
-                                value={exp.year}
-                                onChange={(e) => handleUpdateExperience(idx, 'year', Number(e.target.value) || 2025)}
-                                className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
-                              />
-                            </div>
-                          </div>
-
-                          <div>
-                            <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
-                              Description of Work Done
-                            </label>
-                            <textarea
-                              rows={2}
-                              value={exp.description}
-                              onChange={(e) => handleUpdateExperience(idx, 'description', e.target.value)}
-                              placeholder="Managed crowd entry of 500+ people, guided attendees, assisted celebrity escorts..."
-                              className="w-full px-3 py-2 text-xs bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:border-blue-600"
-                            />
-                          </div>
-
-                          {/* Event Photos */}
-                          <div>
-                            <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1.5">
-                              Event Photos (फ़ोटोज़)
-                            </label>
-
-                            {/* Existing Photos thumbnails */}
-                            <div className="flex flex-wrap gap-2 mb-2">
-                              {exp.images && exp.images.map((photo, pIdx) => (
-                                <div key={pIdx} className="relative w-16 h-16 rounded-xl overflow-hidden border border-slate-200 group">
-                                  <img src={photo} alt="Event Photo" className="w-full h-full object-cover" />
-                                  <button
-                                    type="button"
-                                    onClick={() => handleRemoveExperiencePhoto(idx, pIdx)}
-                                    className="absolute top-1 right-1 w-5 h-5 bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold opacity-80 hover:opacity-100"
-                                  >
-                                    ✕
-                                  </button>
-                                </div>
-                              ))}
-                            </div>
-
-                            {/* Upload photo button */}
-                            <div className="flex items-center gap-2">
-                              <label className="cursor-pointer px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-bold rounded-lg transition-colors inline-flex items-center gap-1">
-                                📷 Add Photo from Phone/Laptop
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    if (e.target.files && e.target.files[0]) {
-                                      handleAddExperiencePhoto(idx, e.target.files[0]);
-                                    }
-                                  }}
-                                />
-                              </label>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                    ))}
+                  </div>
                 </div>
-              )}
+
+                {/* Bio */}
+                <div>
+                  <label className="block text-xs font-bold uppercase text-slate-600 mb-1">
+                    About / Bio
+                  </label>
+                  <textarea
+                    rows={3}
+                    value={editForm.bio}
+                    onChange={(e) => setEditForm({ ...editForm, bio: e.target.value })}
+                    placeholder="Brief intro about yourself and past experience..."
+                    className="w-full px-3.5 py-2 bg-white border border-slate-200 rounded-xl text-xs focus:outline-none focus:border-blue-600"
+                  />
+                </div>
+              </div>
+
+              {/* 2. PAST EVENTS EXPERIENCE (CLEAN TABLE FORMAT) */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Past Event Experience
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Add your past events in the table below (Event Name, Role, Place)
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleAddRow}
+                    className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                  >
+                    <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                    </svg>
+                    <span>Add Row</span>
+                  </button>
+                </div>
+
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left text-xs border-collapse">
+                      <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[11px]">
+                        <tr>
+                          <th className="p-3">Event Name</th>
+                          <th className="p-3">Role</th>
+                          <th className="p-3">Place / City</th>
+                          <th className="p-3 w-12 text-center">Action</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {experienceRows.map((row, idx) => (
+                          <tr key={idx} className="hover:bg-slate-50/50">
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                placeholder="e.g. Jaipur Lit Fest"
+                                value={row.eventName}
+                                onChange={(e) => handleUpdateRow(idx, 'eventName', e.target.value)}
+                                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-blue-600 bg-white"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                placeholder="e.g. Stage Lead"
+                                value={row.role}
+                                onChange={(e) => handleUpdateRow(idx, 'role', e.target.value)}
+                                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-blue-600 bg-white"
+                              />
+                            </td>
+                            <td className="p-2">
+                              <input
+                                type="text"
+                                placeholder="e.g. Jaipur"
+                                value={row.place}
+                                onChange={(e) => handleUpdateRow(idx, 'place', e.target.value)}
+                                className="w-full px-3 py-1.5 border border-slate-200 rounded-lg text-xs font-medium focus:outline-none focus:border-blue-600 bg-white"
+                              />
+                            </td>
+                            <td className="p-2 text-center">
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveRow(idx)}
+                                className="p-1.5 text-slate-400 hover:text-red-600 rounded-md hover:bg-red-50 transition-colors cursor-pointer"
+                                title="Remove row"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. EVENT PHOTOS (ALL PHOTOS IN ONE PLACE) */}
+              <div className="space-y-3 pt-2">
+                <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-slate-500">
+                      Event Photos
+                    </h3>
+                    <p className="text-[11px] text-slate-400">
+                      Upload all your past work and experience photos together ({eventPhotos.length} photos)
+                    </p>
+                  </div>
+
+                  <div>
+                    <input
+                      type="file"
+                      ref={eventPhotosInputRef}
+                      multiple
+                      accept="image/*"
+                      onChange={handleAddEventPhotos}
+                      className="hidden"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => eventPhotosInputRef.current?.click()}
+                      disabled={uploadingEventPhotos}
+                      className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
+                    >
+                      <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                      </svg>
+                      <span>{uploadingEventPhotos ? 'Processing...' : 'Upload Photos'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {eventPhotos.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-3 p-3 bg-slate-50 border border-slate-200 rounded-2xl">
+                    {eventPhotos.map((photo, pIdx) => (
+                      <div key={pIdx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 bg-slate-100 group">
+                        <img src={photo} alt="Event Photo" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveEventPhoto(pIdx)}
+                          className="absolute top-1 right-1 w-5 h-5 bg-black/70 hover:bg-red-600 text-white rounded-full flex items-center justify-center text-[10px] font-bold transition-colors cursor-pointer"
+                          title="Remove Photo"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="p-6 text-center bg-slate-50 border border-dashed border-slate-200 rounded-2xl">
+                    <p className="text-xs text-slate-400">
+                      No event photos uploaded yet. Click &quot;Upload Photos&quot; to add all your pictures together.
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Bottom Sticky Save Bar */}
-              <div className="pt-4 border-t border-gray-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white">
-                <p className="text-xs text-slate-500">
-                  Data will be saved directly into Neon Database.
+              <div className="pt-4 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-3 bg-white">
+                <p className="text-xs text-slate-400">
+                  Data will be saved directly to the database.
                 </p>
 
                 <div className="flex items-center gap-2.5 w-full sm:w-auto">
                   <button
                     type="button"
                     onClick={() => setIsEditing(false)}
-                    className="flex-1 sm:flex-initial px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xs rounded-xl transition-colors"
+                    className="flex-1 sm:flex-initial px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors cursor-pointer"
                   >
                     Cancel
                   </button>
@@ -1255,17 +1217,19 @@ export default function VolunteerProfilePage() {
                   <button
                     type="submit"
                     disabled={isSaving}
-                    className="flex-1 sm:flex-initial px-6 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-98 flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
+                    className="flex-1 sm:flex-initial px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-2 disabled:opacity-70 cursor-pointer"
                   >
                     {isSaving ? (
                       <>
-                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                        <span>Saving to Database...</span>
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <span>Saving...</span>
                       </>
                     ) : (
                       <>
-                        <span>💾</span>
-                        <span>Save Changes to Database</span>
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>Save Changes</span>
                       </>
                     )}
                   </button>
@@ -1278,4 +1242,3 @@ export default function VolunteerProfilePage() {
     </div>
   );
 }
-
