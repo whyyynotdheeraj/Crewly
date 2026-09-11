@@ -701,32 +701,58 @@ export default function VolunteerProfilePage() {
             </div>
 
             {validExperiences.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-sm border-collapse">
-                  <thead>
-                    <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase font-bold tracking-wider">
-                      <th className="py-3 px-4">Event Name</th>
-                      <th className="py-3 px-4">Role</th>
-                      <th className="py-3 px-4">Place / Location</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {validExperiences.map((exp: any, idx: number) => (
-                      <tr key={exp.id || idx} className="hover:bg-slate-50/60 transition-colors">
-                        <td className="py-3.5 px-4 font-bold text-slate-900">{exp.eventName}</td>
-                        <td className="py-3.5 px-4 text-slate-700">
-                          <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold">
-                            {exp.role}
-                          </span>
-                        </td>
-                        <td className="py-3.5 px-4 text-slate-600 font-medium">
-                          {exp.description || exp.eventType || '—'}
-                        </td>
+              <>
+                {/* Mobile View: Clean cards */}
+                <div className="sm:hidden space-y-3">
+                  {validExperiences.map((exp: any, idx: number) => (
+                    <div key={exp.id || idx} className="p-4 bg-slate-50 border border-slate-200/80 rounded-2xl space-y-2">
+                      <div className="flex items-start justify-between gap-2">
+                        <h4 className="font-bold text-slate-900 text-sm">{exp.eventName}</h4>
+                        <span className="inline-block px-2.5 py-0.5 bg-blue-100 text-blue-800 rounded-lg text-xs font-semibold whitespace-nowrap">
+                          {exp.role}
+                        </span>
+                      </div>
+                      {(exp.description || exp.eventType) && (
+                        <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                          <svg className="w-3.5 h-3.5 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                          </svg>
+                          <span>{exp.description || exp.eventType}</span>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop/Tablet View: Table */}
+                <div className="hidden sm:block overflow-x-auto">
+                  <table className="w-full text-left text-sm border-collapse">
+                    <thead>
+                      <tr className="border-b border-slate-200 text-slate-500 text-xs uppercase font-bold tracking-wider">
+                        <th className="py-3 px-4">Event Name</th>
+                        <th className="py-3 px-4">Role</th>
+                        <th className="py-3 px-4">Place / Location</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {validExperiences.map((exp: any, idx: number) => (
+                        <tr key={exp.id || idx} className="hover:bg-slate-50/60 transition-colors">
+                          <td className="py-3.5 px-4 font-bold text-slate-900">{exp.eventName}</td>
+                          <td className="py-3.5 px-4 text-slate-700">
+                            <span className="inline-block px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-semibold">
+                              {exp.role}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-slate-600 font-medium">
+                            {exp.description || exp.eventType || '—'}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </>
             ) : (
               <div className="bg-slate-50 rounded-2xl p-8 text-center border border-slate-200 space-y-3">
                 <p className="text-slate-500 text-sm font-medium">No past event records added yet.</p>
@@ -1088,7 +1114,7 @@ export default function VolunteerProfilePage() {
                 </div>
               </div>
 
-              {/* 2. PAST EVENTS EXPERIENCE (CLEAN TABLE FORMAT) */}
+              {/* 2. PAST EVENTS EXPERIENCE (CLEAN & MOBILE-RESPONSIVE) */}
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between pb-1 border-b border-slate-100">
                   <div>
@@ -1096,22 +1122,86 @@ export default function VolunteerProfilePage() {
                       Past Event Experience
                     </h3>
                     <p className="text-[11px] text-slate-400">
-                      Add your past events in the table below (Event Name, Role, Place)
+                      Add your past events below (Event Name, Role, Place)
                     </p>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddRow}
-                    className="px-3 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1 cursor-pointer"
+                    className="px-3.5 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5 cursor-pointer border border-blue-200"
                   >
                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                     </svg>
-                    <span>Add Row</span>
+                    <span>+ Add Event</span>
                   </button>
                 </div>
 
-                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+                {/* Mobile View: Clean Card Layout */}
+                <div className="sm:hidden space-y-3">
+                  {experienceRows.map((row, idx) => (
+                    <div key={idx} className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[11px] font-bold text-blue-600 uppercase tracking-wider">
+                          Event #{idx + 1}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveRow(idx)}
+                          className="text-xs font-bold text-red-600 hover:text-red-700 p-1 flex items-center gap-1"
+                        >
+                          <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                          <span>Remove</span>
+                        </button>
+                      </div>
+
+                      <div>
+                        <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                          Event Name
+                        </label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Jaipur Literature Festival"
+                          value={row.eventName}
+                          onChange={(e) => handleUpdateRow(idx, 'eventName', e.target.value)}
+                          className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:border-blue-600"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                            Role
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Stage Lead"
+                            value={row.role}
+                            onChange={(e) => handleUpdateRow(idx, 'role', e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-600"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-[10px] font-bold uppercase text-slate-500 mb-1">
+                            Place / City
+                          </label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Jaipur"
+                            value={row.place}
+                            onChange={(e) => handleUpdateRow(idx, 'place', e.target.value)}
+                            className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs focus:outline-none focus:border-blue-600"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Desktop/Tablet View: Table Format */}
+                <div className="hidden sm:block border border-slate-200 rounded-xl overflow-hidden bg-white shadow-2xs">
                   <div className="overflow-x-auto">
                     <table className="w-full text-left text-xs border-collapse">
                       <thead className="bg-slate-50 border-b border-slate-200 text-slate-600 uppercase font-bold text-[11px]">
@@ -1170,6 +1260,18 @@ export default function VolunteerProfilePage() {
                     </table>
                   </div>
                 </div>
+
+                {/* Additional Add Event Button Below */}
+                <button
+                  type="button"
+                  onClick={handleAddRow}
+                  className="w-full sm:w-auto px-4 py-2 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-xl transition-colors flex items-center justify-center gap-1.5 cursor-pointer border border-blue-200"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
+                  </svg>
+                  <span>+ Add Another Event</span>
+                </button>
               </div>
 
               {/* 3. EVENT PHOTOS (ALL PHOTOS IN ONE PLACE) */}

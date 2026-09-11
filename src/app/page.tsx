@@ -69,26 +69,34 @@ export default async function HomePage() {
                   Stop stressing about unverified volunteers. Crewly connects event companies with pre-vetted stage managers, crowd coordinators, VIP liaisons, and registration staff ready to execute.
                 </p>
 
-                {/* 3D Action Buttons: Exactly the 2 requested buttons */}
-                <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start pt-2">
+                {/* 3D Action Buttons */}
+                <div className="flex flex-col sm:flex-row gap-3.5 justify-center lg:justify-start pt-2">
                   <Link
                     href="/join"
-                    className="inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl text-base font-bold text-white btn-premium-gradient shadow-xl hover:shadow-2xl transition-all group"
+                    className="inline-flex items-center justify-center gap-2.5 px-7 py-3.5 rounded-2xl text-sm sm:text-base font-bold text-white btn-premium-gradient shadow-xl hover:shadow-2xl transition-all group"
                   >
                     <span>Join as a Volunteer</span>
-                    <svg className="w-5 h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </Link>
 
                   <Link
                     href="/request"
-                    className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-2xl text-base font-bold text-slate-800 btn-premium-light border border-slate-300 hover:border-indigo-400 shadow-sm transition-all"
+                    className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-2xl text-sm sm:text-base font-bold text-slate-800 btn-premium-light border border-slate-300 hover:border-indigo-400 shadow-sm transition-all"
                   >
                     <span>Request for an Event</span>
-                    <span className="text-xs font-semibold px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-100">
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-pink-50 text-pink-600 border border-pink-100">
                       Hire Crew
                     </span>
+                  </Link>
+
+                  <Link
+                    href="#upcoming-events"
+                    className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl text-sm sm:text-base font-bold text-slate-800 bg-white hover:bg-slate-50 border border-slate-300 hover:border-pink-300 shadow-xs transition-all"
+                  >
+                    <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+                    <span>Upcoming Events</span>
                   </Link>
                 </div>
 

@@ -93,12 +93,20 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <div className="-mr-2 flex items-center md:hidden">
+          {/* Mobile Right Controls: Events Button + Hamburger */}
+          <div className="flex items-center gap-2 md:hidden">
+            <Link
+              href="/#upcoming-events"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-pink-50 hover:bg-pink-100 border border-pink-200 text-pink-700 text-xs font-bold shadow-xs active:scale-95 transition-all"
+            >
+              <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
+              <span>Events</span>
+            </Link>
+
             <button
               onClick={() => setIsOpen(!isOpen)}
               type="button"
-              className="bg-slate-100 rounded-xl p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus:outline-none"
+              className="bg-slate-100 rounded-xl p-2.5 text-slate-600 hover:text-slate-900 hover:bg-slate-200 focus:outline-none cursor-pointer"
             >
               {!isOpen ? (
                 <svg className="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -118,6 +126,19 @@ export default function Navbar() {
       {isOpen && (
         <div className="md:hidden border-t border-slate-200 bg-white/95 backdrop-blur-2xl px-4 pt-4 pb-6 space-y-3 shadow-xl">
           <Link 
+            href="/#upcoming-events" 
+            onClick={() => setIsOpen(false)}
+            className="text-pink-700 hover:text-pink-800 px-3.5 py-3 rounded-xl text-base font-bold bg-pink-50/80 border border-pink-200 flex items-center justify-between transition-colors"
+          >
+            <div className="flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-pink-500 animate-pulse"></span>
+              <span>Events & Upcoming Gigs</span>
+            </div>
+            <span className="text-[11px] bg-pink-600 text-white font-bold px-2 py-0.5 rounded-full">
+              Explore
+            </span>
+          </Link>
+          <Link 
             href="/" 
             onClick={() => setIsOpen(false)}
             className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50 flex items-center gap-2"
@@ -126,14 +147,6 @@ export default function Navbar() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
             </svg>
             <span>Home</span>
-          </Link>
-          <Link 
-            href="/#upcoming-events" 
-            onClick={() => setIsOpen(false)}
-            className="text-slate-700 hover:text-indigo-600 block px-3 py-2.5 rounded-lg text-base font-semibold hover:bg-slate-50 flex items-center gap-2"
-          >
-            <span className="w-2 h-2 rounded-full bg-pink-500 animate-pulse"></span>
-            <span>Upcoming Gigs & Festivals</span>
           </Link>
           <Link 
             href="/companies" 
