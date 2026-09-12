@@ -1,7 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Link from 'next/link';
+import { DndContext, closestCenter } from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 type Volunteer = {
   id: number | string;
@@ -27,6 +34,8 @@ export default function AdminVolunteersPage() {
   const [message, setMessage] = useState({ type: '', text: '' });
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'verified' | 'unverified'>('all');
+  const [moveSteps, setMoveSteps] = useState(1);
+
 
   // Modal states
   const [selectedVolunteer, setSelectedVolunteer] = useState<Volunteer | null>(null);
@@ -113,15 +122,16 @@ export default function AdminVolunteersPage() {
   };
 
   const handleMove = async (index: number, direction: 'up' | 'down') => {
+    const steps = moveSteps; // number of positions to move
     const newVolunteers = [...volunteers];
-    const targetIndex = direction === 'up' ? index - 1 : index + 1;
-
-    if (targetIndex < 0 || targetIndex >= newVolunteers.length) return;
-
-    // Swap elements
-    const temp = newVolunteers[index];
-    newVolunteers[index] = newVolunteers[targetIndex];
-    newVolunteers[targetIndex] = temp;
+    // Remove the volunteer at current index
+    const [moved] = newVolunteers.splice(index, 1);
+    // Determine new index based on direction and steps
+    const newIndex = direction === 'up' ? index - steps : index + steps;
+    // Clamp newIndex within array bounds
+    const clampedIndex = Math.max(0, Math.min(newVolunteers.length, newIndex));
+    // Insert volunteer at new position
+    newVolunteers.splice(clampedIndex, 0, moved);
 
     setVolunteers(newVolunteers);
 
@@ -140,6 +150,41 @@ export default function AdminVolunteersPage() {
     } catch {
       showMessage('error', 'Error reordering volunteers');
     }
+  };
+
+// Drag‑and‑drop handling
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const oldIndex = filteredVolunteers.findIndex(v => v.id === active.id);
+    const newIndex = filteredVolunteers.findIndex(v => v.id === over.id);
+    const reordered = arrayMove(filteredVolunteers, oldIndex, newIndex);
+    setVolunteers(reordered);
+    // Persist order
+    fetch('/api/volunteers/reorder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ volunteerIds: reordered.map(v => v.id) }),
+    })
+      .then(res => {
+        if (res.ok) showMessage('success', 'Order updated & live on website!');
+        else showMessage('error', 'Failed to update order');
+      })
+      .catch(() => showMessage('error', 'Failed to update order'));
+  };
+
+  // Sortable row component
+  const SortableItem = ({ id, children }: { id: any; children: React.ReactNode }) => {
+    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+    } as React.CSSProperties;
+    return (
+      <tr ref={setNodeRef} style={style} {...attributes} {...listeners} className="hover:bg-blue-50/30 transition-colors">
+        {children}
+      </tr>
+    );
   };
 
   // Filtered volunteers
@@ -286,9 +331,11 @@ export default function AdminVolunteersPage() {
                   <th className="py-4 px-6 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100 text-sm">
+              <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
+  <SortableContext items={filteredVolunteers.map(v => v.id)} strategy={verticalListSortingStrategy}>
+    <tbody className="divide-y divide-gray-100 text-sm">
                 {filteredVolunteers.map((v, idx) => (
-                  <tr key={v.id} className="hover:bg-blue-50/30 transition-colors">
+                  <SortableItem id={v.id} key={v.id}>
                     {/* Profile Photo */}
                     <td className="py-4 px-6">
                       <div className="relative group w-12 h-12">
@@ -406,31 +453,12 @@ export default function AdminVolunteersPage() {
 
                     {/* Shuffle / Reorder Controls */}
                     <td className="py-4 px-4 text-center whitespace-nowrap">
-                      <div className="flex items-center justify-center gap-1">
-                        <button
-                          type="button"
-                          onClick={() => handleMove(idx, 'up')}
-                          disabled={idx === 0}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
-                          title="Move Up"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 15l7-7 7 7" />
-                          </svg>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleMove(idx, 'down')}
-                          disabled={idx === filteredVolunteers.length - 1}
-                          className="p-1.5 rounded-lg bg-slate-100 hover:bg-indigo-100 hover:text-indigo-600 text-slate-600 disabled:opacity-30 disabled:cursor-not-allowed transition-all shadow-xs cursor-pointer"
-                          title="Move Down"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-                          </svg>
-                        </button>
-                      </div>
-                    </td>
+            <div className="cursor-grab" title="Drag to reorder">
+    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+    </svg>
+  </div>
+</td>
 
                     {/* Actions */}
                     <td className="py-4 px-6 text-right whitespace-nowrap space-x-2">
@@ -456,6 +484,8 @@ export default function AdminVolunteersPage() {
                   </tr>
                 ))}
               </tbody>
+</SortableContext>
+</DndContext>
             </table>
           </div>
         )}
