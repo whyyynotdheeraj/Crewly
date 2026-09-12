@@ -124,13 +124,8 @@ export async function GET(request: NextRequest) {
         console.warn('Auto-create volunteer (Google) failed:', insertErr);
       }
     } else {
-      // Link existing profile & update profile image if not set
+      // Link existing profile (do not overwrite whatever photo they have set)
       try {
-        await sql`
-          UPDATE volunteers
-          SET profile_image = COALESCE(NULLIF(profile_image, ''), ${picture || null}), updated_at = NOW()
-          WHERE id = ${existingVols[0].id} AND (${picture || null} IS NOT NULL)
-        `;
         await sql`
           UPDATE volunteer_auth_tokens
           SET linked_volunteer_id = ${String(existingVols[0].id)}, updated_at = NOW()
