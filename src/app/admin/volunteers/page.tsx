@@ -175,15 +175,174 @@ export default function AdminVolunteersPage() {
   };
 
   // Sortable row component
-  const SortableItem = ({ id, children }: { id: any; children: React.ReactNode }) => {
-    const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id });
+  const SortableVolunteerRow = ({ v }: { v: Volunteer }) => {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: v.id });
     const style = {
       transform: CSS.Transform.toString(transform),
       transition,
+      opacity: isDragging ? 0.6 : 1,
+      zIndex: isDragging ? 40 : undefined,
     } as React.CSSProperties;
+
     return (
-      <tr ref={setNodeRef} style={style} {...attributes} {...listeners} className="hover:bg-blue-50/30 transition-colors">
-        {children}
+      <tr ref={setNodeRef} style={style} className={`hover:bg-blue-50/30 transition-colors ${isDragging ? 'bg-blue-50' : ''}`}>
+        {/* Profile Photo */}
+        <td className="py-4 px-6">
+          <div className="relative group w-12 h-12">
+            {v.profileImage ? (
+              <img
+                src={v.profileImage}
+                alt={v.name}
+                onClick={(e) => { e.stopPropagation(); setZoomImage(v.profileImage); }}
+                onError={(e) => {
+                  (e.target as HTMLElement).style.display = 'none';
+                }}
+                className="w-12 h-12 rounded-xl object-cover border border-gray-200 shadow-xs cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
+                title="Click to zoom image"
+              />
+            ) : (
+              <div
+                onClick={(e) => { e.stopPropagation(); setSelectedVolunteer(v); }}
+                className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-xs cursor-pointer"
+                title="Click to view details"
+              >
+                {v.name ? v.name.charAt(0).toUpperCase() : 'V'}
+              </div>
+            )}
+            {v.verified && (
+              <span
+                className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow"
+                title="Verified"
+              >
+                ✓
+              </span>
+            )}
+          </div>
+        </td>
+
+        {/* Name & Contact */}
+        <td className="py-4 px-6">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setSelectedVolunteer(v); }}
+            className="font-bold text-gray-900 hover:text-blue-600 text-left block text-sm transition-colors cursor-pointer"
+          >
+            {v.name}
+          </button>
+          <div className="flex flex-col gap-0.5 text-xs text-gray-500 mt-1">
+            {v.phone && (
+              <span className="flex items-center gap-1 font-mono text-gray-600">
+                📞 {v.phone}
+              </span>
+            )}
+            {v.email && (
+              <span className="flex items-center gap-1 text-gray-400 truncate max-w-[180px]">
+                ✉️ {v.email}
+              </span>
+            )}
+          </div>
+        </td>
+
+        {/* Location */}
+        <td className="py-4 px-6 text-gray-600 font-medium">
+          <span className="inline-flex items-center gap-1">
+            📍 {v.location || 'Not specified'}
+          </span>
+          {v.age ? <span className="block text-xs text-gray-400">{v.age} yrs old</span> : null}
+        </td>
+
+        {/* Experience */}
+        <td className="py-4 px-6">
+          <div className="text-gray-900 font-semibold text-xs">
+            {v.yearsExperience ?? 0} {v.yearsExperience === 1 ? 'Year' : 'Years'} Exp
+          </div>
+          <div className="text-xs text-gray-400 mt-0.5">
+            {v.eventsCompleted ?? 0} Gigs Done
+          </div>
+        </td>
+
+        {/* Skills */}
+        <td className="py-4 px-6">
+          <div className="flex flex-wrap gap-1 max-w-[180px]">
+            {Array.isArray(v.skills) && v.skills.length > 0 ? (
+              <>
+                {v.skills.slice(0, 2).map((skill, i) => (
+                  <span
+                    key={i}
+                    className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md truncate max-w-[90px]"
+                  >
+                    {skill}
+                  </span>
+                ))}
+                {v.skills.length > 2 && (
+                  <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-md">
+                    +{v.skills.length - 2}
+                  </span>
+                )}
+              </>
+            ) : (
+              <span className="text-xs text-gray-400 italic">No skills listed</span>
+            )}
+          </div>
+        </td>
+
+        {/* Verification Toggle */}
+        <td className="py-4 px-6">
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              handleToggleVerify(v.id, v.verified);
+            }}
+            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-all shadow-xs active:scale-95 ${
+              v.verified
+                ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
+            }`}
+            title="Click to toggle verification status"
+          >
+            {v.verified ? '✓ Verified' : '○ Unverified'}
+          </button>
+        </td>
+
+        {/* Shuffle / Reorder Controls (Listeners attached strictly here) */}
+        <td className="py-4 px-4 text-center whitespace-nowrap">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing p-2 hover:bg-gray-100 rounded-lg inline-flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors touch-none"
+            title="Drag to reorder"
+          >
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
+            </svg>
+          </div>
+        </td>
+
+        {/* Actions */}
+        <td className="py-4 px-6 text-right whitespace-nowrap space-x-2">
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); setSelectedVolunteer(v); }}
+            className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+          >
+            View Details
+          </button>
+          <Link
+            href={`/admin/volunteers/${v.id}/edit`}
+            onClick={(e) => e.stopPropagation()}
+            className="inline-block px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition-colors"
+          >
+            Edit
+          </Link>
+          <button
+            type="button"
+            onClick={(e) => { e.stopPropagation(); handleDelete(v.id); }}
+            className="px-2.5 py-1.5 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition-colors cursor-pointer"
+          >
+            Delete
+          </button>
+        </td>
       </tr>
     );
   };
@@ -335,154 +494,8 @@ export default function AdminVolunteersPage() {
               <DndContext onDragEnd={handleDragEnd} collisionDetection={closestCenter}>
   <SortableContext items={filteredVolunteers.map(v => v.id)} strategy={verticalListSortingStrategy}>
     <tbody className="divide-y divide-gray-100 text-sm">
-                {filteredVolunteers.map((v, idx) => (
-                  <SortableItem id={v.id} key={v.id}>
-                    {/* Profile Photo */}
-                    <td className="py-4 px-6">
-                      <div className="relative group w-12 h-12">
-                        {v.profileImage ? (
-                          <img
-                            src={v.profileImage}
-                            alt={v.name}
-                            onClick={() => setZoomImage(v.profileImage)}
-                            onError={(e) => {
-                              // If image fails, replace with initial avatar
-                              (e.target as HTMLElement).style.display = 'none';
-                            }}
-                            className="w-12 h-12 rounded-xl object-cover border border-gray-200 shadow-xs cursor-pointer hover:ring-2 hover:ring-blue-500 transition-all"
-                            title="Click to zoom image"
-                          />
-                        ) : (
-                          <div
-                            onClick={() => setSelectedVolunteer(v)}
-                            className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold text-base shadow-xs cursor-pointer"
-                            title="Click to view details"
-                          >
-                            {v.name ? v.name.charAt(0).toUpperCase() : 'V'}
-                          </div>
-                        )}
-                        {v.verified && (
-                          <span
-                            className="absolute -top-1 -right-1 w-4 h-4 bg-blue-600 text-white rounded-full flex items-center justify-center text-[10px] shadow"
-                            title="Verified"
-                          >
-                            ✓
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Name & Contact */}
-                    <td className="py-4 px-6">
-                      <button
-                        onClick={() => setSelectedVolunteer(v)}
-                        className="font-bold text-gray-900 hover:text-blue-600 text-left block text-sm transition-colors"
-                      >
-                        {v.name}
-                      </button>
-                      <div className="flex flex-col gap-0.5 text-xs text-gray-500 mt-1">
-                        {v.phone && (
-                          <span className="flex items-center gap-1 font-mono text-gray-600">
-                            📞 {v.phone}
-                          </span>
-                        )}
-                        {v.email && (
-                          <span className="flex items-center gap-1 text-gray-400 truncate max-w-[180px]">
-                            ✉️ {v.email}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Location */}
-                    <td className="py-4 px-6 text-gray-600 font-medium">
-                      <span className="inline-flex items-center gap-1">
-                        📍 {v.location || 'Not specified'}
-                      </span>
-                      {v.age ? <span className="block text-xs text-gray-400">{v.age} yrs old</span> : null}
-                    </td>
-
-                    {/* Experience */}
-                    <td className="py-4 px-6">
-                      <div className="text-gray-900 font-semibold text-xs">
-                        {v.yearsExperience ?? 0} {v.yearsExperience === 1 ? 'Year' : 'Years'} Exp
-                      </div>
-                      <div className="text-xs text-gray-400 mt-0.5">
-                        {v.eventsCompleted ?? 0} Gigs Done
-                      </div>
-                    </td>
-
-                    {/* Skills */}
-                    <td className="py-4 px-6">
-                      <div className="flex flex-wrap gap-1 max-w-[180px]">
-                        {Array.isArray(v.skills) && v.skills.length > 0 ? (
-                          <>
-                            {v.skills.slice(0, 2).map((skill, i) => (
-                              <span
-                                key={i}
-                                className="inline-block px-2 py-0.5 bg-gray-100 text-gray-700 text-xs font-medium rounded-md truncate max-w-[90px]"
-                              >
-                                {skill}
-                              </span>
-                            ))}
-                            {v.skills.length > 2 && (
-                              <span className="inline-block px-1.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-md">
-                                +{v.skills.length - 2}
-                              </span>
-                            )}
-                          </>
-                        ) : (
-                          <span className="text-xs text-gray-400 italic">No skills listed</span>
-                        )}
-                      </div>
-                    </td>
-
-                    {/* Verification Toggle */}
-                    <td className="py-4 px-6">
-                      <button
-                        onClick={() => handleToggleVerify(v.id, v.verified)}
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold cursor-pointer transition-all shadow-xs ${
-                          v.verified
-                            ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200 border border-emerald-300'
-                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200 border border-gray-300'
-                        }`}
-                        title="Click to toggle verification status"
-                      >
-                        {v.verified ? '✓ Verified' : '○ Unverified'}
-                      </button>
-                    </td>
-
-                    {/* Shuffle / Reorder Controls */}
-                    <td className="py-4 px-4 text-center whitespace-nowrap">
-            <div className="cursor-grab" title="Drag to reorder">
-    <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 8h16M4 16h16" />
-    </svg>
-  </div>
-</td>
-
-                    {/* Actions */}
-                    <td className="py-4 px-6 text-right whitespace-nowrap space-x-2">
-                      <button
-                        onClick={() => setSelectedVolunteer(v)}
-                        className="px-3 py-1.5 bg-blue-50 hover:bg-blue-100 text-blue-700 text-xs font-bold rounded-lg transition-colors"
-                      >
-                        View Details
-                      </button>
-                      <Link
-                        href={`/admin/volunteers/${v.id}/edit`}
-                        className="px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-bold rounded-lg transition-colors"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        onClick={() => handleDelete(v.id)}
-                        className="px-2.5 py-1.5 text-red-600 hover:bg-red-50 text-xs font-bold rounded-lg transition-colors"
-                      >
-                        Delete
-                      </button>
-                    </td>
-                  </SortableItem>
+                {filteredVolunteers.map((v) => (
+                  <SortableVolunteerRow key={v.id} v={v} />
                 ))}
               </tbody>
 </SortableContext>
