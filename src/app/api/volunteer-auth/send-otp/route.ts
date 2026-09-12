@@ -91,9 +91,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: emailSent ? 'OTP sent to your email.' : 'Login code generated successfully.',
-      otp,
-      devOtp: otp,
+      message: emailSent ? 'OTP sent to your email.' : 'Email delivery failed. Please check your Resend configuration.',
       emailSent,
       emailStatus: emailStatusMessage,
     });
