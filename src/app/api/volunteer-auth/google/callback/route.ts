@@ -108,7 +108,7 @@ export async function GET(request: NextRequest) {
           ) VALUES (
             ${derivedName}, ${normalizedEmail}, '', '', 'Profile not filled yet.',
             0, 0, '[]'::jsonb,
-            'available', false, ${picture || null}, 0, NOW(), NOW()
+            'available', false, null, 0, NOW(), NOW()
           )
           RETURNING id
         `;
