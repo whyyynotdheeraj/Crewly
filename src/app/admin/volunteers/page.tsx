@@ -481,7 +481,7 @@ export default function AdminVolunteersPage() {
                         Delete
                       </button>
                     </td>
-                  </tr>
+                  </SortableItem>
                 ))}
               </tbody>
 </SortableContext>
