@@ -50,11 +50,57 @@ export async function POST(request: NextRequest) {
         updated_at = NOW()
     `;
 
-    // Check if this email has a volunteer profile linked
-    const volunteers = await sql`
-      SELECT id, name FROM volunteers WHERE email = ${normalizedEmail} LIMIT 1
+    // Check if this email already has a volunteer profile
+    let existingVolunteers = await sql`
+      SELECT id, name FROM volunteers WHERE LOWER(email) = ${normalizedEmail} LIMIT 1
     `;
-    const linkedVolunteer = volunteers.length > 0 ? volunteers[0] : null;
+
+    let linkedVolunteer = existingVolunteers.length > 0 ? existingVolunteers[0] : null;
+
+    // If no profile exists, auto-create a basic one so they appear in the volunteers section
+    if (!linkedVolunteer) {
+      // Derive a display name from the email (e.g. "john.doe@gmail.com" → "John Doe")
+      const emailPrefix = normalizedEmail.split('@')[0];
+      const derivedName = emailPrefix
+        .replace(/[._-]/g, ' ')
+        .replace(/\b\w/g, (c: string) => c.toUpperCase())
+        .trim() || 'Volunteer';
+
+      try {
+        const inserted = await sql`
+          INSERT INTO volunteers (
+            name, email, phone, location, bio,
+            years_experience, events_completed, skills,
+            availability, verified, display_order, created_at, updated_at
+          ) VALUES (
+            ${derivedName}, ${normalizedEmail}, '', '', 'Profile not filled yet.',
+            0, 0, ARRAY[]::text[],
+            'available', false, 0, NOW(), NOW()
+          )
+          RETURNING id, name
+        `;
+
+        if (inserted && inserted.length > 0) {
+          linkedVolunteer = inserted[0];
+        }
+      } catch (insertErr) {
+        // If insert fails (e.g. unique constraint), try fetching again
+        console.warn('Auto-create volunteer failed, retrying fetch:', insertErr);
+        const retry = await sql`
+          SELECT id, name FROM volunteers WHERE LOWER(email) = ${normalizedEmail} LIMIT 1
+        `;
+        if (retry.length > 0) linkedVolunteer = retry[0];
+      }
+    }
+
+    // Link volunteer_auth_tokens → volunteer profile
+    if (linkedVolunteer?.id) {
+      await sql`
+        UPDATE volunteer_auth_tokens
+        SET linked_volunteer_id = ${String(linkedVolunteer.id)}, updated_at = NOW()
+        WHERE email = ${normalizedEmail}
+      `;
+    }
 
     const response = NextResponse.json({
       success: true,
@@ -75,7 +121,8 @@ export async function POST(request: NextRequest) {
 
     return response;
 
-  } catch {
+  } catch (err) {
+    console.error('Verify OTP error:', err);
     return NextResponse.json({ error: 'Verification failed. Try again.' }, { status: 500 });
   }
 }

@@ -88,6 +88,51 @@ export async function GET(request: NextRequest) {
         updated_at = NOW()
     `;
 
+    // Auto-create volunteer profile if one doesn't exist yet
+    let existingVols = await sql`
+      SELECT id FROM volunteers WHERE LOWER(email) = ${normalizedEmail} LIMIT 1
+    `;
+
+    if (existingVols.length === 0) {
+      try {
+        const derivedName = name || normalizedEmail.split('@')[0]
+          .replace(/[._-]/g, ' ')
+          .replace(/\b\w/g, (c: string) => c.toUpperCase())
+          .trim() || 'Volunteer';
+
+        const inserted = await sql`
+          INSERT INTO volunteers (
+            name, email, phone, location, bio,
+            years_experience, events_completed, skills,
+            availability, verified, display_order, created_at, updated_at
+          ) VALUES (
+            ${derivedName}, ${normalizedEmail}, '', '', 'Profile not filled yet.',
+            0, 0, ARRAY[]::text[],
+            'available', false, 0, NOW(), NOW()
+          )
+          ON CONFLICT (email) DO NOTHING
+          RETURNING id
+        `;
+
+        if (inserted && inserted.length > 0) {
+          await sql`
+            UPDATE volunteer_auth_tokens
+            SET linked_volunteer_id = ${String(inserted[0].id)}, updated_at = NOW()
+            WHERE email = ${normalizedEmail}
+          `;
+        }
+      } catch (insertErr) {
+        console.warn('Auto-create volunteer (Google) failed:', insertErr);
+      }
+    } else {
+      // Link existing profile
+      await sql`
+        UPDATE volunteer_auth_tokens
+        SET linked_volunteer_id = ${String(existingVols[0].id)}, updated_at = NOW()
+        WHERE email = ${normalizedEmail}
+      `;
+    }
+
     const response = NextResponse.redirect(`${APP_URL}${callbackUrl}`);
     response.cookies.set('vol_token', token, {
       httpOnly: true,
