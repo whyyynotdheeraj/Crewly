@@ -104,13 +104,12 @@ export async function GET(request: NextRequest) {
           INSERT INTO volunteers (
             name, email, phone, location, bio,
             years_experience, events_completed, skills,
-            availability, verified, display_order, created_at, updated_at
+            availability, verified, profile_image, display_order, created_at, updated_at
           ) VALUES (
             ${derivedName}, ${normalizedEmail}, '', '', 'Profile not filled yet.',
-            0, 0, ARRAY[]::text[],
-            'available', false, 0, NOW(), NOW()
+            0, 0, '[]'::jsonb,
+            'available', false, ${picture || null}, 0, NOW(), NOW()
           )
-          ON CONFLICT (email) DO NOTHING
           RETURNING id
         `;
 
@@ -125,12 +124,21 @@ export async function GET(request: NextRequest) {
         console.warn('Auto-create volunteer (Google) failed:', insertErr);
       }
     } else {
-      // Link existing profile
-      await sql`
-        UPDATE volunteer_auth_tokens
-        SET linked_volunteer_id = ${String(existingVols[0].id)}, updated_at = NOW()
-        WHERE email = ${normalizedEmail}
-      `;
+      // Link existing profile & update profile image if not set
+      try {
+        await sql`
+          UPDATE volunteers
+          SET profile_image = COALESCE(NULLIF(profile_image, ''), ${picture || null}), updated_at = NOW()
+          WHERE id = ${existingVols[0].id} AND (${picture || null} IS NOT NULL)
+        `;
+        await sql`
+          UPDATE volunteer_auth_tokens
+          SET linked_volunteer_id = ${String(existingVols[0].id)}, updated_at = NOW()
+          WHERE email = ${normalizedEmail}
+        `;
+      } catch (err) {
+        console.warn('Link existing profile failed:', err);
+      }
     }
 
     const response = NextResponse.redirect(`${APP_URL}${callbackUrl}`);
